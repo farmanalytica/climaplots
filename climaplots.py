@@ -144,24 +144,8 @@ class ClimaPlots:
 
         # will be set False in run()
         self.first_start = True
-
-                # will be set False in run()
-        self.first_start = True
         self.Markers = []
 
-    def unload(self):
-        """Removes the plugin menu item and icon from QGIS GUI."""
-        for action in self.actions:
-            self.iface.removePluginMenu(
-                self.tr(u'&ClimaPlots'),
-                action)
-            self.iface.removeToolBarIcon(action)
-        
-        # Close dialog if it exists
-        if self.dlg:
-            self.dlg.close()
-
-    # In your main plugin class (climaplots.py)
     def run(self):
         """Run method that shows the modeless dialog"""
         
@@ -174,7 +158,13 @@ class ClimaPlots:
                 self.dlg.Markers = self.Markers
             except Exception:
                 pass
-        
+            # Wire map-click and close cleanup once, at creation, so repeated
+            # run() calls don't stack duplicate connections.
+            self.clickTool.canvasClicked.connect(
+                lambda point, button=None: handleMouseDown(
+                    self.canvas, self.dlg, self.Markers, point, button))
+            self.dlg.rejected.connect(lambda: fun_fechou(self.canvas, self.Markers))
+
         # Check if dialog exists but is minimized or hidden
         if self.dlg.isMinimized():
             # Restore from minimized state
@@ -191,19 +181,12 @@ class ClimaPlots:
             self.dlg.raise_()
             self.dlg.activateWindow()
 
-        # Run method that performs all the real work
+        # Activate the click tool and clear previous coordinates
         self.canvas.setMapTool(self.clickTool)
-        # Conecta o evento do mouse à função importada
-        self.clickTool.canvasClicked.connect(lambda point, button=None: handleMouseDown(self.canvas, self.dlg, self.Markers, point, button))
         self.dlg.LongEdit.clear()
         self.dlg.LatEdit.clear()
-        # Ensure dialog-level cleanup also removes markers when rejected
-        self.dlg.rejected.connect(lambda: fun_fechou(self.canvas, self.Markers))
 
         self.dlg.show()
-
-        # Run the dialog event loop
-        result = self.dlg.exec_()
 
 
 
