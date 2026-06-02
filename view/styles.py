@@ -69,3 +69,12 @@ QPushButton:checked {
 QPushButton:checked:hover { background-color: #21ad5f; }
 QPushButton:disabled { background-color: #f0f0f0; color: #a0a0a0; border-color: #e0e0e0; }
 """
+
+# Subtle flat link-style button (e.g. the corner "Proxy settings" entry).
+STYLE_BTN_SUBTLE = """
+QPushButton {
+    background: transparent; color: #8a98a6;
+    border: none; font-size: 11px; padding: 4px 8px;
+}
+QPushButton:hover { color: #2c6cab; }
+"""
