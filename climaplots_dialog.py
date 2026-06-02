@@ -1,38 +1,43 @@
 # -*- coding: utf-8 -*-
 """
-ClimaPlots dialog shell.
+ClimaPlots dialog shell (pure-Qt UI, English only).
 
-This module owns the dialog window and UI behaviour only: widget setup, signal
-wiring, navigation and rendering. The heavy work is delegated:
+The window is a left :class:`~view.sidebar.Sidebar` + a ``QStackedWidget`` of
+pages (Intro / Coordinates / Trends / Thermo-pluviometric / Indices). The UI is
+built by the ``view/pages.py`` ``setup_*_page`` builders, which attach the
+interactive widgets onto this dialog; this module owns only behaviour: signal
+wiring, navigation, worker orchestration and rendering. The heavy work is
+delegated:
 
   * ``services/``  - NASA POWER fetch, climate indices, stats, figure building.
   * ``workers/``   - the QThread that runs fetch + indices off the GUI thread.
   * ``view/plotly_view`` - renders plotly figures into the QtWebKit web views.
 
-Keeping logic out of here mirrors the sibling plugins (qgis-EasyDEM,
-terra_valora) and the QtWebKit/plotly fix mirrors qgis-AGLgis.
+Structure mirrors the sibling plugins (qgis-EasyDEM, terra_valora) and the
+QtWebKit/plotly fix mirrors qgis-AGLgis.
 """
-import os
-
 import qgis
 from qgis.core import QgsApplication, QgsMessageLog, Qgis
-from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, QSettings, QTimer
+from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog,
     QDialogButtonBox,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QMessageBox,
+    QStackedWidget,
     QVBoxLayout,
+    QWidget,
 )
 import webbrowser
 
 from .modules import map_tools, save_utils
-from .mouse_events import Delete_Marker
+from .modules.canvas_click_tool import CanvasClickTool
 from .services import plot_service, settings_manager
-from .view import plotly_view
+from .view import Sidebar, pages, plotly_view
+from .view.styles import STYLE_DIALOG
 from .workers import AnalysisWorker
 
 # Plotly chart config (toolbar trimmed) shared by all three views.
@@ -55,19 +60,15 @@ _LOADING_HTML = (
     "margin-top:40px'><h3>Fetching climate data...</h3></body></html>"
 )
 
-# Load the UI matching the user locale.
-_language = QSettings().value("locale/userLocale", "en")[0:2]
-_ui_name = "climaplots_dialog_base_pt.ui" if _language == "pt" else "climaplots_dialog_base.ui"
-FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), "ui", _ui_name))
 
-
-class ClimaPlotsDialog(QDialog, FORM_CLASS):
-    """Main dialog: input on tab 0, three plotly visualizations on tabs 1+."""
+class ClimaPlotsDialog(QDialog):
+    """Sidebar-navigated dialog with an intro page and three plotly views."""
 
     def __init__(self, parent=None, iface=None):
         super(ClimaPlotsDialog, self).__init__(parent)
-        self.setupUi(self)
         self.iface = iface
+
+        self._build_ui()
 
         self.setWindowFlags(
             Qt.WindowType.Window
@@ -79,10 +80,9 @@ class ClimaPlotsDialog(QDialog, FORM_CLASS):
 
         self.focus_timer = QTimer()
         self.focus_timer.timeout.connect(self.check_focus)
-        QTimer.singleShot(0, lambda: self.resizeEvent("small"))
 
-        self._populate_variable_dropdown()
-        self._setup_climate_indices()
+        # Map-click capture ("clicking mode"); needs a live iface.
+        self.click_tool = CanvasClickTool(iface) if iface is not None else None
 
         # State
         self.climate_data = None            # services.types.ClimateData
@@ -93,11 +93,53 @@ class ClimaPlotsDialog(QDialog, FORM_CLASS):
 
         self._connect_ui_signals()
         self.language = QgsApplication.instance().locale()[:2]
-        self.tabWidget.setCurrentIndex(0)
+        self._goto("intro")
 
-    # ------------------------------------------------------------------ setup
+    # ----------------------------------------------------------------- build UI
+    def _build_ui(self):
+        """Sidebar + QStackedWidget of pages, built by the view/pages builders."""
+        self.setWindowTitle("ClimaPlots")
+        self.setStyleSheet(STYLE_DIALOG)
+        self.resize(1000, 560)
+
+        self.sidebar = Sidebar(self)
+        self.stack = QStackedWidget(self)
+
+        self.intro_page = QWidget()
+        self.coords_page = QWidget()
+        self.trends_page = QWidget()
+        self.thermo_page = QWidget()
+        self.indices_page = QWidget()
+
+        pages.setup_intro_page(self, self.intro_page)
+        pages.setup_coordinates_page(self, self.coords_page)
+        pages.setup_trends_page(self, self.trends_page)
+        pages.setup_thermo_page(self, self.thermo_page)
+        pages.setup_indices_page(self, self.indices_page)
+
+        for p in (self.intro_page, self.coords_page, self.trends_page,
+                  self.thermo_page, self.indices_page):
+            self.stack.addWidget(p)
+
+        self._page_for = {
+            "intro": self.intro_page, "coords": self.coords_page,
+            "trends": self.trends_page, "thermo": self.thermo_page,
+            "indices": self.indices_page,
+        }
+
+        root = QHBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+        root.addWidget(self.sidebar)
+        root.addWidget(self.stack, 1)
+
     def _connect_ui_signals(self):
-        self.tabWidget.currentChanged.connect(self.on_tab_changed)
+        self.sidebar.intro_requested.connect(lambda: self._goto("intro"))
+        self.sidebar.coords_requested.connect(lambda: self._goto("coords"))
+        self.sidebar.trends_requested.connect(lambda: self._goto("trends"))
+        self.sidebar.thermo_requested.connect(lambda: self._goto("thermo"))
+        self.sidebar.indices_requested.connect(lambda: self._goto("indices"))
+
         self.navegador.clicked.connect(lambda: self._open_in_browser(1))
         self.navegador_2.clicked.connect(lambda: self._open_in_browser(2))
         self.navegador_3.clicked.connect(lambda: self._open_in_browser(3))
@@ -113,29 +155,42 @@ class ClimaPlotsDialog(QDialog, FORM_CLASS):
         self.proxy.clicked.connect(self.open_proxy_dialog)
         self.learn.clicked.connect(self.open_learn_dialog)
 
-    def _populate_variable_dropdown(self):
-        for name in ["Max Temperature", "Min Temperature", "Precipitation",
-                     "Relative Humidity", "Irradiation"]:
-            self.atributo.addItem(name)
+        if self.click_tool is not None:
+            self.pick_point.toggled.connect(self._toggle_pick)
+            self.click_tool.point_picked.connect(self._on_point_picked)
+        else:
+            self.pick_point.setEnabled(False)
 
-    def _setup_climate_indices(self):
-        sheet_names = [
-            "Annual Summer Days", "Annual Frost Days", "Annual Tropical Nights",
-            "Annual Icing Days", "Monthly Maximum Temperature",
-            "Monthly Minimum Temperature of Maximum Temperatures",
-            "Monthly Maximum Temperature of Minimum Temperatures",
-            "Monthly Minimum Temperature", "Daily Temperature Range",
-            "Monthly Maximum 1-day Precipitation", "Monthly Maximum 5-day Precipitation",
-            "Annual Count of Days when Precipitation Exceeds 10mm",
-            "Annual Count of Days when Precipitation Exceeds 20mm",
-            "Simple Precipitation Intensity Index",
-            "Number of Consecutive Dry Days in a Month",
-            "Number of Consecutive Wet Days in a Month",
-            "The Standardized Precipitation Index (SPI)",
-        ]
-        for name in sheet_names:
-            self.atributo_2.addItem(name)
-        self.atributo_2.setCurrentIndex(0)
+    # --------------------------------------------------------------- navigation
+    def _goto(self, page_key):
+        """Switch the stack + sidebar highlight to ``page_key``."""
+        page = self._page_for[page_key]
+        self.stack.setCurrentWidget(page)
+        self.sidebar.set_active_page(page_key)
+
+    def _on_get_started(self):
+        self._goto("coords")
+
+    def on_input_page(self):
+        """True when the coordinate-input page is showing (gates map markers)."""
+        return self.stack.currentWidget() is self.coords_page
+
+    # ----------------------------------------------------------- clicking mode
+    def _toggle_pick(self, enabled):
+        """Enter/leave map-click capture mode from the toggle button."""
+        if self.click_tool is None:
+            return
+        if enabled:
+            self.click_tool.enable()
+        else:
+            self.click_tool.disable()
+
+    def _on_point_picked(self, longitude, latitude):
+        """A point was clicked: fill the fields and pop the toggle off."""
+        self.LongEdit.setText(str(longitude))
+        self.LatEdit.setText(str(latitude))
+        if self.pick_point.isChecked():
+            self.pick_point.setChecked(False)  # tool already auto-disabled
 
     # -------------------------------------------------------------- data flow
     def request_api(self):
@@ -175,7 +230,7 @@ class ClimaPlotsDialog(QDialog, FORM_CLASS):
         self.plots1()
         self.plots2()
         self.plots3()
-        self.tabWidget.setCurrentIndex(1)
+        self._goto("trends")
 
     def _on_analysis_failed(self, message):
         QApplication.restoreOverrideCursor()
@@ -196,13 +251,8 @@ class ClimaPlotsDialog(QDialog, FORM_CLASS):
             self._figs[tab] = None
             self._save_data[tab] = None
             self._tmp_paths_clear(tab)
-        try:
-            canvas = getattr(self, "canvas", None) or (self.iface.mapCanvas() if self.iface else None)
-            markers = getattr(self, "Markers", None)
-            if canvas and markers:
-                Delete_Marker(canvas, markers)
-        except Exception:
-            pass
+        if self.click_tool is not None:
+            self.click_tool.clear_marker()
 
     # ----------------------------------------------------------- plot rendering
     def plots1(self):
@@ -288,9 +338,6 @@ class ClimaPlotsDialog(QDialog, FORM_CLASS):
     # ------------------------------------------------------------ window events
     def showEvent(self, event):
         super().showEvent(event)
-        if not hasattr(self, "_size_locked"):
-            self.resizeEvent("small")
-            self._size_locked = True
         if hasattr(self, "focus_timer"):
             self.focus_timer.start(100)
 
@@ -322,31 +369,17 @@ class ClimaPlotsDialog(QDialog, FORM_CLASS):
         self.hide()
         event.ignore()
 
-    def on_tab_changed(self, index):
-        self.resizeEvent("big" if index != 0 else "small")
-
-    def resizeEvent(self, event):
-        self.setMinimumSize(0, 0)
-        self.setMaximumSize(16777215, 16777215)
-        if event == "small":
-            self.resize(402, 210)
-            self.setFixedSize(self.width(), self.height())
-        elif event == "big":
-            self.resize(945, 535)
-            self.setFixedSize(self.width(), self.height())
-
     def fun_fechou(self):
         self.LongEdit.clear()
         self.LatEdit.clear()
-        self.tabWidget.setCurrentIndex(0)
+        self._goto("coords")
         qgis.utils.iface.actionPan().trigger()
         self._remove_markers()
 
     def _remove_markers(self):
-        try:
-            canvas = getattr(self, "canvas", None) or (self.iface.mapCanvas() if hasattr(self, "iface") and self.iface else None)
-            markers = getattr(self, "Markers", None)
-            if canvas and markers:
-                Delete_Marker(canvas, markers)
-        except Exception:
-            pass
+        """Clear the canvas marker and leave capture mode (restores map tool)."""
+        if self.click_tool is not None:
+            self.click_tool.clear_marker()
+            self.click_tool.disable()
+        if hasattr(self, "pick_point") and self.pick_point.isChecked():
+            self.pick_point.setChecked(False)

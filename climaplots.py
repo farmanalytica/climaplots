@@ -24,16 +24,12 @@ This plugin calculates the Vegetation Index of a given area.
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
-from qgis.gui import QgsMapToolEmitPoint
-from qgis.gui import QgsVertexMarker
 
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
 from .climaplots_dialog import ClimaPlotsDialog
 import os.path
-
-from .mouse_events import handleMouseDown, Delete_Marker, fun_fechou
 
 
 class ClimaPlots:
@@ -73,11 +69,6 @@ class ClimaPlots:
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
         self.dlg = None  # Initialize dialog reference
-
-        # refernce to map canvas
-        self.canvas = self.iface.mapCanvas()
-        # out click tool will emit a QgsPoint on every click
-        self.clickTool = QgsMapToolEmitPoint(self.canvas)
 
 
     # noinspection PyMethodMayBeStatic
@@ -144,49 +135,21 @@ class ClimaPlots:
 
         # will be set False in run()
         self.first_start = True
-        self.Markers = []
 
     def run(self):
         """Run method that shows the modeless dialog"""
-        
-        # Create dialog only if it doesn't exist
+
+        # Create dialog only if it doesn't exist. The dialog owns its own
+        # map-click capture ("clicking mode") via a toggle button.
         if not hasattr(self, 'dlg') or self.dlg is None:
             self.dlg = ClimaPlotsDialog(parent=None, iface=self.iface)
-            # expose canvas and markers list to the dialog for cleanup
-            try:
-                self.dlg.canvas = self.canvas
-                self.dlg.Markers = self.Markers
-            except Exception:
-                pass
-            # Wire map-click and close cleanup once, at creation, so repeated
-            # run() calls don't stack duplicate connections.
-            self.clickTool.canvasClicked.connect(
-                lambda point, button=None: handleMouseDown(
-                    self.canvas, self.dlg, self.Markers, point, button))
-            self.dlg.rejected.connect(lambda: fun_fechou(self.canvas, self.Markers))
 
-        # Check if dialog exists but is minimized or hidden
+        # Restore / show / raise depending on current visibility
         if self.dlg.isMinimized():
-            # Restore from minimized state
             self.dlg.showNormal()
-            self.dlg.raise_()
-            self.dlg.activateWindow()
-        elif not self.dlg.isVisible():
-            # Show if hidden
-            self.dlg.show()
-            self.dlg.raise_()
-            self.dlg.activateWindow()
-        else:
-            # Already visible, just bring to front
-            self.dlg.raise_()
-            self.dlg.activateWindow()
-
-        # Activate the click tool and clear previous coordinates
-        self.canvas.setMapTool(self.clickTool)
-        self.dlg.LongEdit.clear()
-        self.dlg.LatEdit.clear()
-
         self.dlg.show()
+        self.dlg.raise_()
+        self.dlg.activateWindow()
 
 
 

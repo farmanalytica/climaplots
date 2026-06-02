@@ -1,3 +1,4 @@
 # -*- coding: utf-8 -*-
-"""ClimaPlots view helpers (Qt rendering)."""
-from . import plotly_view  # noqa: F401
+"""ClimaPlots view layer (Qt rendering + page builders)."""
+from . import pages, plotly_view, styles  # noqa: F401
+from .sidebar import Sidebar  # noqa: F401
