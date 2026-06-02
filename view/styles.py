@@ -70,6 +70,16 @@ QPushButton:checked:hover { background-color: #21ad5f; }
 QPushButton:disabled { background-color: #f0f0f0; color: #a0a0a0; border-color: #e0e0e0; }
 """
 
+# Round "?" help button in the header.
+STYLE_BTN_HELP = """
+QPushButton {
+    background-color: transparent; color: #9aa7b4;
+    border: 1.5px solid #d0d9e2; border-radius: 14px;
+    font-size: 13px; font-weight: bold;
+}
+QPushButton:hover { background-color: #eef3f8; color: #2c6cab; border-color: #2c6cab; }
+"""
+
 # Subtle flat link-style button (e.g. the corner "Proxy settings" entry).
 STYLE_BTN_SUBTLE = """
 QPushButton {

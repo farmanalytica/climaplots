@@ -27,6 +27,7 @@ from qgis.PyQt.QtWidgets import (
     QLabel,
     QLineEdit,
     QMessageBox,
+    QPushButton,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -37,8 +38,17 @@ from .modules import map_tools, save_utils
 from .modules.canvas_click_tool import CanvasClickTool
 from .services import plot_service, settings_manager
 from .view import Sidebar, pages, plotly_view
-from .view.styles import STYLE_DIALOG
+from .view.styles import STYLE_BTN_HELP, STYLE_DIALOG
 from .workers import AnalysisWorker
+
+# Header page-title shown per page (mirrors AGLgis's dynamic header title).
+_PAGE_TITLES = {
+    "intro": "Welcome",
+    "coords": "Select coordinates",
+    "trends": "Annual trends",
+    "thermo": "Thermo-pluviometric diagram",
+    "indices": "Climate indices",
+}
 
 # Plotly chart config (toolbar trimmed) shared by all three views.
 _PLOT_CONFIG = {
@@ -127,11 +137,55 @@ class ClimaPlotsDialog(QDialog):
             "indices": self.indices_page,
         }
 
-        root = QHBoxLayout(self)
+        # Top header bar (brand | page title ............ help), then the body
+        # (sidebar + stacked pages) below it.
+        body = QHBoxLayout()
+        body.setContentsMargins(0, 0, 0, 0)
+        body.setSpacing(0)
+        body.addWidget(self.sidebar)
+        body.addWidget(self.stack, 1)
+
+        root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
-        root.addWidget(self.sidebar)
-        root.addWidget(self.stack, 1)
+        root.addWidget(self._build_header())
+        root.addLayout(body, 1)
+
+    def _build_header(self):
+        """Fixed-height top bar: brand + dynamic page title + help button."""
+        header = QWidget()
+        header.setFixedHeight(40)
+        header.setObjectName("climaHeader")
+        header.setStyleSheet(
+            "QWidget#climaHeader { background-color: #ffffff; "
+            "border-bottom: 1px solid #e3e9ef; }"
+        )
+        lay = QHBoxLayout(header)
+        lay.setContentsMargins(20, 0, 16, 0)
+        lay.setSpacing(0)
+
+        brand = QLabel("ClimaPlots")
+        brand.setStyleSheet("color: #1c3d5a; font-size: 13px; font-weight: bold; letter-spacing: 0.5px;")
+        lay.addWidget(brand)
+
+        sep = QLabel("  |")
+        sep.setStyleSheet("color: #d0d9e2; font-size: 16px;")
+        lay.addWidget(sep)
+
+        self._header_title = QLabel(_PAGE_TITLES["intro"])
+        self._header_title.setStyleSheet("color: #5b6b7b; font-size: 13px; margin-left: 6px;")
+        lay.addWidget(self._header_title)
+
+        lay.addStretch()
+
+        help_btn = QPushButton("?")
+        help_btn.setFixedSize(28, 28)
+        help_btn.setToolTip("Learn more about this plugin")
+        help_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        help_btn.setStyleSheet(STYLE_BTN_HELP)
+        help_btn.clicked.connect(self.open_learn_dialog)
+        lay.addWidget(help_btn)
+        return header
 
     def _connect_ui_signals(self):
         self.sidebar.intro_requested.connect(lambda: self._goto("intro"))
@@ -167,6 +221,7 @@ class ClimaPlotsDialog(QDialog):
         page = self._page_for[page_key]
         self.stack.setCurrentWidget(page)
         self.sidebar.set_active_page(page_key)
+        self._header_title.setText(_PAGE_TITLES.get(page_key, ""))
 
     def _on_get_started(self):
         self._goto("coords")
