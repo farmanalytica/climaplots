@@ -76,15 +76,6 @@ def _make_webview():
     return view
 
 
-def _load_logo(width=210):
-    """Load the FARM Analytica logo (svg, png fallback) scaled to ``width``."""
-    for name in ("farm_analytica_logo.svg", "farm_icon.png"):
-        pix = QPixmap(os.path.join(_ASSETS, name))
-        if not pix.isNull():
-            return pix.scaledToWidth(width, Qt.TransformationMode.SmoothTransformation)
-    return None
-
-
 # --------------------------------------------------------------------- intro
 def setup_intro_page(dialog, page):
     page.setObjectName("pageIntro")
@@ -149,30 +140,48 @@ def setup_intro_page(dialog, page):
 
 
 def _build_sponsor():
-    """Sponsor footer: 'Sponsored by' + FARM Analytica logo."""
-    wrap = QWidget()
-    wrap.setStyleSheet("background: transparent;")
-    lay = QVBoxLayout(wrap)
-    lay.setContentsMargins(0, 0, 0, 0)
-    lay.setSpacing(6)
+    """Sponsor footer (same as AGLgis): FARM logo + attribution with a link."""
+    footer = QWidget()
+    footer.setMinimumHeight(36)
+    footer.setStyleSheet(
+        "background-color: transparent;"
+        "QLabel { border: none; background: transparent; }"
+    )
+    lay = QHBoxLayout(footer)
+    lay.setContentsMargins(28, 4, 28, 4)
+    lay.setSpacing(8)
 
-    label = QLabel("Sponsored by")
-    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    label.setStyleSheet("color: #90a0b0; font-size: 11px; background: transparent;")
-    lay.addWidget(label)
-
-    logo = QLabel()
-    logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    logo.setStyleSheet("background: transparent;")
-    pix = _load_logo(200)
-    if pix is not None:
-        logo.setPixmap(pix)
+    # FARM Analytica logo — falls back to plain text if the SVG is missing.
+    farm_icon = QLabel()
+    farm_icon.setFixedHeight(16)
+    farm_icon.setStyleSheet("background: transparent;")
+    pix = QPixmap(os.path.join(_ASSETS, "farm_analytica_logo.svg")).scaledToHeight(
+        16, Qt.TransformationMode.SmoothTransformation
+    )
+    if not pix.isNull():
+        farm_icon.setPixmap(pix)
+        farm_icon.setFixedWidth(pix.width())
     else:
-        logo.setText("FARM Analytica")
-        logo.setStyleSheet("color: #1c3d5a; font-size: 14px; font-weight: bold; background: transparent;")
-    logo.setCursor(Qt.CursorShape.PointingHandCursor)
-    lay.addWidget(logo)
-    return wrap
+        farm_icon.setText("FARM ANALYTICA")
+        farm_icon.setStyleSheet("color: #1c3d5a; font-size: 9px; font-weight: bold;")
+    farm_icon.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+    lay.addWidget(farm_icon)
+
+    # Attribution copy with an external link to the FARM Analytica website.
+    farm_text = QLabel()
+    farm_text.setTextFormat(Qt.TextFormat.RichText)
+    farm_text.setOpenExternalLinks(True)
+    farm_text.setWordWrap(True)
+    farm_text.setText(
+        "This is a free and open project, supported by "
+        '<a href="https://farmanalytica.com.br" style="color:#2c6cab;'
+        'text-decoration:none;font-weight:bold;">FARM Analytica</a>. '
+        "Get in touch for exclusive and personalized commercial solutions."
+    )
+    farm_text.setStyleSheet("color: #9e9e9e; font-size: 9px;")
+    farm_text.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+    lay.addWidget(farm_text)
+    return footer
 
 
 # ----------------------------------------------------------------- coordinates
