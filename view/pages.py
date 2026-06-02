@@ -25,7 +25,7 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
 )
 
-from .styles import STYLE_BTN, STYLE_BTN_PRIMARY
+from .styles import STYLE_BTN, STYLE_BTN_PRIMARY, STYLE_PICK_TOGGLE
 
 _PLUGIN_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _MEDIAS = os.path.join(_PLUGIN_DIR, "medias")
@@ -49,6 +49,10 @@ _INDICES = [
     "Number of Consecutive Wet Days in a Month",
     "The Standardized Precipitation Index (SPI)",
 ]
+
+# Labels for the checkable "pick point" toggle (idle / capturing).
+PICK_TEXT_OFF = "📍  Pick point on map"
+PICK_TEXT_ON = "📍  Click on the map…  (capturing)"
 
 _INTRO_TEXT = (
     "ClimaPlots fetches 40+ years of daily climate data from NASA POWER for any "
@@ -172,9 +176,9 @@ def setup_coordinates_page(dialog, page):
     grid.addWidget(QLabel("Latitude:"), 0, 1)
     grid.addWidget(dialog.LongEdit, 1, 0)
     grid.addWidget(dialog.LatEdit, 1, 1)
-    dialog.pick_point = QPushButton("📍  Pick point on map")
+    dialog.pick_point = QPushButton(PICK_TEXT_OFF)
     dialog.pick_point.setCheckable(True)
-    dialog.pick_point.setStyleSheet(STYLE_BTN)
+    dialog.pick_point.setStyleSheet(STYLE_PICK_TOGGLE)
     dialog.pick_point.setCursor(Qt.CursorShape.PointingHandCursor)
     grid.addWidget(dialog.pick_point, 2, 0, 1, 2)
     layout.addWidget(group)

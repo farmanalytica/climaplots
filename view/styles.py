@@ -52,3 +52,20 @@ QPushButton {
 QPushButton:hover { background-color: #b6d4fe; }
 QPushButton:disabled { background-color: #f0f0f0; color: #a0a0a0; }
 """
+
+# Checkable "Pick point on map" toggle: idle (blue) vs capturing (green, with a
+# clear active border) so the on/off state is obvious at a glance.
+STYLE_PICK_TOGGLE = """
+QPushButton {
+    background-color: #d1e7ff; color: #14324a;
+    border: 1px solid #aacdf5; border-radius: 6px;
+    padding: 7px; font-weight: bold;
+}
+QPushButton:hover { background-color: #b6d4fe; }
+QPushButton:checked {
+    background-color: #1e9e57; color: #ffffff;
+    border: 2px solid #14753f;
+}
+QPushButton:checked:hover { background-color: #21ad5f; }
+QPushButton:disabled { background-color: #f0f0f0; color: #a0a0a0; border-color: #e0e0e0; }
+"""

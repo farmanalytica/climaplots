@@ -178,6 +178,7 @@ class ClimaPlotsDialog(QDialog):
     # ----------------------------------------------------------- clicking mode
     def _toggle_pick(self, enabled):
         """Enter/leave map-click capture mode from the toggle button."""
+        self.pick_point.setText(pages.PICK_TEXT_ON if enabled else pages.PICK_TEXT_OFF)
         if self.click_tool is None:
             return
         if enabled:
