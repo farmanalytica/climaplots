@@ -23,33 +23,12 @@
  This script initializes the plugin, making it known to QGIS.
 """
 
-import os
-import sys
-# Import QMessageBox for user feedback if a dependency is missing (optional but recommended)
-from qgis.PyQt.QtWidgets import QMessageBox
+from . import extlibs_manager
 
-# --- START: Dependency Loading Code ---
-# Get the path to the current plugin directory
-plugin_dir = os.path.dirname(__file__)
-
-# Define the path to the 'extlibs' directory
-extlibs_path = os.path.join(plugin_dir, 'extlibs')
-
-# Add the 'extlibs' directory to sys.path if it exists and is not already there
-# This ensures that Python can find the modules installed by 'paver setup'
-if os.path.isdir(extlibs_path) and extlibs_path not in sys.path:
-    sys.path.insert(0, extlibs_path)
-    print(f"ClimaPlots Plugin: Added '{extlibs_path}' to sys.path.")
-elif not os.path.isdir(extlibs_path):
-    print(f"ClimaPlots Plugin Warning: 'extlibs' directory not found at '{extlibs_path}'. "
-          "External dependencies might be missing. Please run 'paver setup'.")
-    # Optional: Display a warning message to the user
-    # QMessageBox.warning(None, "ClimaPlots Plugin Warning",
-    #                     "External dependencies directory 'extlibs' not found. "
-    #                     "Please ensure you have run 'paver setup' for the plugin.")
-
-
-# --- END: Dependency Loading Code ---
+# Add extlibs to sys.path immediately so already-downloaded libraries are
+# importable. The actual download (first run) happens in classFactory, where a
+# QGIS interface exists to parent the progress dialog.
+extlibs_manager.ensure_on_path()
 
 
 # noinspection PyPep8Naming
@@ -59,8 +38,15 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
-    #
-    # Ensure your ClimaPlots class imports its dependencies AFTER sys.path is modified
-    # For example, if ClimaPlots.py uses 'requests', it will now find it.
+    # ClimaPlots imports its scientific dependencies (xarray, pymannkendall,
+    # pyhomogeneity, climdex, ...) eagerly at module load, so the external
+    # libraries must be present before the import below. Download them on first
+    # run, blocking until ready.
+    if not extlibs_manager.ensure_ready(parent=iface.mainWindow()):
+        raise RuntimeError(
+            "ClimaPlots: external dependencies could not be downloaded. "
+            "Check your internet connection and try reloading the plugin."
+        )
+
     from .climaplots import ClimaPlots
     return ClimaPlots(iface)
