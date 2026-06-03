@@ -241,6 +241,24 @@ def _toolbar_label(text):
     return lbl
 
 
+def _nav_footer(dialog, back_key=None, next_key=None):
+    """Back / Next footer linking sequential pages; arrows omitted when None."""
+    bar = QWidget()
+    lay = QHBoxLayout(bar)
+    lay.setContentsMargins(0, 2, 0, 0)
+    lay.setSpacing(6)
+    if back_key:
+        back = _button("Back", "icons8-back-button-50.png", "Go to the previous page")
+        back.clicked.connect(lambda: dialog._goto(back_key))
+        lay.addWidget(back)
+    lay.addStretch(1)
+    if next_key:
+        nxt = _button("Next", "icons8-forward-button-50.png", "Go to the next page")
+        nxt.clicked.connect(lambda: dialog._goto(next_key))
+        lay.addWidget(nxt)
+    return bar
+
+
 def setup_trends_page(dialog, page):
     row, web = _plot_page(dialog, page)
     dialog.atributo = _combo(_VARIABLES, "Choose the climate variable to plot")
@@ -257,6 +275,7 @@ def setup_trends_page(dialog, page):
     row.addWidget(dialog.navegador)
     row.addWidget(dialog.save_plot)
     dialog.webView_1 = web
+    page.layout().addWidget(_nav_footer(dialog, back_key="coords", next_key="thermo"))
 
 
 def setup_thermo_page(dialog, page):
@@ -270,6 +289,7 @@ def setup_thermo_page(dialog, page):
     row.addWidget(dialog.navegador_2)
     row.addWidget(dialog.save_plot2)
     dialog.webView_2 = web
+    page.layout().addWidget(_nav_footer(dialog, back_key="trends", next_key="indices"))
 
 
 def setup_indices_page(dialog, page):
@@ -285,3 +305,4 @@ def setup_indices_page(dialog, page):
     row.addWidget(dialog.navegador_3)
     row.addWidget(dialog.save_plot3)
     dialog.webView_3 = web
+    page.layout().addWidget(_nav_footer(dialog, back_key="thermo"))
