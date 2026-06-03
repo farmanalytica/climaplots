@@ -28,6 +28,7 @@ from qgis.PyQt.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -48,6 +49,16 @@ _PAGE_TITLES = {
     "trends": "Annual trends",
     "thermo": "Thermo-pluviometric diagram",
     "indices": "Climate indices",
+}
+
+# Per-page window size (w, h). Coordinates stays small so more of the map
+# canvas remains visible while picking a point; plot pages open wide.
+_PAGE_SIZES = {
+    "intro": (820, 560),
+    "coords": (440, 320),
+    "trends": (1020, 620),
+    "thermo": (1020, 620),
+    "indices": (1020, 620),
 }
 
 # Plotly chart config (toolbar trimmed) shared by all three views.
@@ -110,7 +121,6 @@ class ClimaPlotsDialog(QDialog):
         """Sidebar + QStackedWidget of pages, built by the view/pages builders."""
         self.setWindowTitle("ClimaPlots")
         self.setStyleSheet(STYLE_DIALOG)
-        self.resize(1000, 560)
 
         self.sidebar = Sidebar(self)
         self.stack = QStackedWidget(self)
@@ -130,6 +140,11 @@ class ClimaPlotsDialog(QDialog):
         for p in (self.intro_page, self.coords_page, self.trends_page,
                   self.thermo_page, self.indices_page):
             self.stack.addWidget(p)
+            # Ignored size policy so the QStackedWidget sizes to the *current*
+            # page only; otherwise the small coordinates page could not shrink
+            # below the wide plot pages. The active page is restored to
+            # Expanding in _goto().
+            p.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
 
         self._page_for = {
             "intro": self.intro_page, "coords": self.coords_page,
@@ -226,9 +241,14 @@ class ClimaPlotsDialog(QDialog):
     def _goto(self, page_key):
         """Switch the stack + sidebar highlight to ``page_key``."""
         page = self._page_for[page_key]
+        for p in self._page_for.values():
+            p.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        page.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.stack.setCurrentWidget(page)
         self.sidebar.set_active_page(page_key)
         self._header_title.setText(_PAGE_TITLES.get(page_key, ""))
+        if page_key in _PAGE_SIZES:
+            self.resize(*_PAGE_SIZES[page_key])
 
     def _on_get_started(self):
         self._goto("coords")

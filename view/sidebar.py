@@ -121,7 +121,7 @@ class Sidebar(QFrame):
 
         self._layout.addStretch()
 
-        self.version_label = QLabel("v1.0")
+        self.version_label = QLabel("v2.0")
         self.version_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.version_label.setStyleSheet(
             f"color: {SIDEBAR_MUTED}; font-size: 9px; background: transparent; border: none;"
