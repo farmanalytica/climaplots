@@ -313,6 +313,18 @@ def setup_coordinates_page(dialog, page):
     dialog.pick_point_b.setMinimumHeight(32)
     dialog.pick_point_b.setToolTip(_tr("Leave empty for a single-point analysis"))
     grid_b.addWidget(dialog.pick_point_b, 2, 0, 1, 2)
+
+    # B may use its own source, so the same point can be compared across sources.
+    dialog.source_combo_b = QComboBox()
+    dialog.source_combo_b.addItem(_tr("(same source as A)"), None)
+    dialog.source_combo_b.addItem("NASA POWER", "power")
+    dialog.source_combo_b.addItem("Open-Meteo (ERA5)", "openmeteo")
+    dialog.source_combo_b.setToolTip(_tr("Data source for the comparison point"))
+    src_b = QHBoxLayout()
+    src_b.setSpacing(6)
+    src_b.addWidget(QLabel(_tr("Source")))
+    src_b.addWidget(dialog.source_combo_b, 1)
+    grid_b.addLayout(src_b, 3, 0, 1, 2)
     layout.addWidget(group_b)
 
     aux = QHBoxLayout()

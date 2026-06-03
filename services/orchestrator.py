@@ -17,7 +17,7 @@ SOURCES = {
 
 
 def run_analysis(longitude, latitude, proxy="", warn=None, start_year=None, end_year=None,
-                 longitude_b=None, latitude_b=None, source="power"):
+                 longitude_b=None, latitude_b=None, source="power", source_b=None):
     """Fetch climate data and compute indices for a coordinate.
 
     Args:
@@ -37,11 +37,17 @@ def run_analysis(longitude, latitude, proxy="", warn=None, start_year=None, end_
     indices = indices_service.compute(df, warn=warn or (lambda _m: None))
 
     df_b = None
+    used_source_b = ""
     if longitude_b not in (None, "") and latitude_b not in (None, ""):
         # Comparison point: raw series only (no indices), for the trends overlay.
-        df_b = fetcher.fetch(longitude_b, latitude_b, proxy, start_year=sy, end_year=end_year)
+        # B may use its own source (None -> same as A) for source comparison.
+        used_source_b = source_b or source
+        fetcher_b = SOURCES.get(used_source_b, fetcher)
+        sy_b = start_year or fetcher_b.MIN_YEAR
+        df_b = fetcher_b.fetch(longitude_b, latitude_b, proxy, start_year=sy_b, end_year=end_year)
 
     return ClimateData(
         df=df, indices=indices, longitude=str(longitude), latitude=str(latitude),
         df_b=df_b, longitude_b=str(longitude_b or ""), latitude_b=str(latitude_b or ""),
+        source=source, source_b=used_source_b,
     )

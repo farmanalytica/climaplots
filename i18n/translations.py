@@ -470,3 +470,17 @@ for _l, _v in {
     "zh": ("数据源", "气候数据提供方"),
 }.items():
     TRANSLATIONS[_l].update({"Data source": _v[0], "Climate data provider": _v[1]})
+
+
+# --- Appended: per-B source strings ------------------------------------------
+SOURCES += ["(same source as A)", "Data source for the comparison point", "Source"]
+for _l, _v in {
+    "pt": ("(mesma fonte de A)", "Fonte de dados do ponto de comparação", "Fonte"),
+    "es": ("(misma fuente que A)", "Fuente de datos del punto de comparación", "Fuente"),
+    "fr": ("(même source que A)", "Source de données du point de comparaison", "Source"),
+    "it": ("(stessa fonte di A)", "Fonte dati del punto di confronto", "Fonte"),
+    "hi": ("(A के समान स्रोत)", "तुलना बिंदु के लिए डेटा स्रोत", "स्रोत"),
+    "zh": ("（与 A 相同来源）", "对比点的数据源", "来源"),
+}.items():
+    TRANSLATIONS[_l].update({"(same source as A)": _v[0],
+                             "Data source for the comparison point": _v[1], "Source": _v[2]})

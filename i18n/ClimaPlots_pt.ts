@@ -297,5 +297,17 @@ Veja o log do QGIS para detalhes.</translation>
         <source>Climate data provider</source>
         <translation>Provedor de dados climáticos</translation>
     </message>
+    <message>
+        <source>(same source as A)</source>
+        <translation>(mesma fonte de A)</translation>
+    </message>
+    <message>
+        <source>Data source for the comparison point</source>
+        <translation>Fonte de dados do ponto de comparação</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation>Fonte</translation>
+    </message>
 </context>
 </TS>

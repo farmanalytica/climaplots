@@ -375,6 +375,7 @@ class ClimaPlotsDialog(QDialog):
             longitude_b=self.LongEditB.text().strip() or None,
             latitude_b=self.LatEditB.text().strip() or None,
             source=self.source_combo.currentData() or "power",
+            source_b=self.source_combo_b.currentData(),
             parent=self,
         )
         self._worker.finished_ok.connect(self._on_analysis_done)
@@ -421,7 +422,8 @@ class ClimaPlotsDialog(QDialog):
         self._render(1, self.webView_1,
                      lambda d: plot_service.annual_trends(
                          d.df, self.atributo.currentText(), d.longitude, d.latitude,
-                         df_b=d.df_b, longitude_b=d.longitude_b, latitude_b=d.latitude_b))
+                         df_b=d.df_b, longitude_b=d.longitude_b, latitude_b=d.latitude_b,
+                         source=d.source, source_b=d.source_b))
 
     def plots2(self):
         self._render(2, self.webView_2,

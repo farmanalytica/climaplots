@@ -57,12 +57,23 @@ def _aggregate_annual(df):
     return out
 
 
+_SOURCE_NAMES = {"power": "NASA POWER", "openmeteo": "Open-Meteo"}
+
+
+def _series_label(prefix, longitude, latitude, source):
+    label = f"{prefix} ({longitude}, {latitude})"
+    name = _SOURCE_NAMES.get(source)
+    return f"{label} · {name}" if name else label
+
+
 def annual_trends(df, atributo, longitude, latitude,
-                  df_b=None, longitude_b="", latitude_b=""):
+                  df_b=None, longitude_b="", latitude_b="", source="", source_b=""):
     """Annual trend line for one variable, titled with MK + Pettitt results.
 
     When ``df_b`` is given, a second series for the comparison point is overlaid
-    (the statistical tests are reported for point A only).
+    (the statistical tests are reported for point A only). The legend notes each
+    series' data source, so the same point fetched from two sources can be
+    compared.
     """
     df_year = _aggregate_annual(df)
     if atributo not in df_year.columns:
@@ -78,12 +89,12 @@ def annual_trends(df, atributo, longitude, latitude,
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=df_year["Date"], y=df_year[atributo], mode="lines+markers",
-            name=f"A ({longitude}, {latitude})"))
+            name=_series_label("A", longitude, latitude, source)))
         df_year_b = _aggregate_annual(df_b)
         if atributo in df_year_b.columns:
             fig.add_trace(go.Scatter(
                 x=df_year_b["Date"], y=df_year_b[atributo], mode="lines+markers",
-                name=f"B ({longitude_b}, {latitude_b})"))
+                name=_series_label("B", longitude_b, latitude_b, source_b)))
         fig.update_layout(title=f"<b>{atributo}</b><br>{title}", showlegend=True)
     else:
         fig = px.line(

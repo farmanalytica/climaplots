@@ -297,5 +297,17 @@ Consultez le journal QGIS pour plus de détails.</translation>
         <source>Climate data provider</source>
         <translation>Fournisseur de données climatiques</translation>
     </message>
+    <message>
+        <source>(same source as A)</source>
+        <translation>(même source que A)</translation>
+    </message>
+    <message>
+        <source>Data source for the comparison point</source>
+        <translation>Source de données du point de comparaison</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation>Source</translation>
+    </message>
 </context>
 </TS>

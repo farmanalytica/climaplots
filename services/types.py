@@ -31,6 +31,9 @@ class ClimateData:
     df_b: object = None
     longitude_b: str = ""
     latitude_b: str = ""
+    # Data-source keys ("power" / "openmeteo") used for A and B (for legends).
+    source: str = "power"
+    source_b: str = ""
 
 
 @dataclass

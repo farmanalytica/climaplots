@@ -22,7 +22,7 @@ class AnalysisWorker(QThread):
     progress = pyqtSignal(str)         # human-readable status / per-index warning
 
     def __init__(self, longitude, latitude, proxy="", start_year=None, end_year=None,
-                 longitude_b=None, latitude_b=None, source="power", parent=None):
+                 longitude_b=None, latitude_b=None, source="power", source_b=None, parent=None):
         super().__init__(parent)
         self._longitude = longitude
         self._latitude = latitude
@@ -32,6 +32,7 @@ class AnalysisWorker(QThread):
         self._longitude_b = longitude_b
         self._latitude_b = latitude_b
         self._source = source
+        self._source_b = source_b
 
     def run(self):
         try:
@@ -41,7 +42,7 @@ class AnalysisWorker(QThread):
                 warn=lambda msg: self.progress.emit(msg),
                 start_year=self._start_year, end_year=self._end_year,
                 longitude_b=self._longitude_b, latitude_b=self._latitude_b,
-                source=self._source,
+                source=self._source, source_b=self._source_b,
             )
             self.finished_ok.emit(data)
         except Exception:  # noqa: BLE001 - surface any failure to the UI
