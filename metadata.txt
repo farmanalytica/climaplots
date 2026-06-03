@@ -7,12 +7,12 @@
 [general]
 name=ClimaPlots
 qgisMinimumVersion=3.0
-description=Analyze and visualize climate data from NASA POWER, including temperature, precipitation, and solar radiation, directly within QGIS.
+description=Fetch 40+ years of daily climate data from NASA POWER or Open-Meteo (ERA5) for any point and build interactive charts in QGIS: annual trends with Mann-Kendall/Pettitt tests, a thermo-pluviometric diagram, ETCCDI indices and SPI, plus reference ET0, growing degree days and wind.
 version=2.0
 author=Caio Arantes
 email=caiosimplicioarantes@gmail.com
 
-about=ClimaPlots enables users to access, analyze, and plot NASA POWER climate datasets in QGIS, supporting spatial and temporal exploration for environmental research and decision-making.
+about=ClimaPlots brings point-based climate analysis into QGIS with no coding. Click a location (or type coordinates), choose a year range and a data source (NASA POWER or Open-Meteo/ERA5), and the plugin downloads the daily series and builds interactive plotly charts: annual trends annotated with the Mann-Kendall trend and Pettitt homogeneity tests, a thermo-pluviometric diagram, the full set of ETCCDI temperature/precipitation indices and the Standardized Precipitation Index (SPI), plus reference evapotranspiration (ET0), growing degree days and wind. Compare two locations (or the same point across sources), export charts as PNG and all tables as an Excel report, in a multi-language interface (EN/PT/ES/FR/IT/HI/ZH). Scientific dependencies are downloaded automatically on first run.
 
 tracker=https://github.com/caioarantes/climaplots/issues
 repository=https://github.com/caioarantes/climaplots
@@ -23,11 +23,20 @@ repository=https://github.com/caioarantes/climaplots
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
+    2.0 - Major update
+        - Two data sources: NASA POWER and Open-Meteo (ERA5), with same-point cross-source comparison
+        - Compare two locations on the annual-trends chart
+        - Year-range selection; new variables: reference ET0, growing degree days, wind
+        - Mann-Kendall and Pettitt tests; full ETCCDI indices + SPI (fixed under pandas 3)
+        - Sidebar navigation, intro page, per-variable/index descriptions
+        - Multi-language UI (EN/PT/ES/FR/IT/HI/ZH)
+        - PNG chart export and one-click Excel report; on-disk caching of downloads
+        - Persistent map marker; dependencies downloaded on first run; QtWebKit-compatible charts
     1.0 - Ability to enter coordinates manually
     0.1 - Initial release
 
 # Tags are comma separated with spaces allowed
-tags=python,sentinel,radar,sar,google earth engine,remote sensing,raster
+tags=climate,nasa power,open-meteo,era5,weather,precipitation,temperature,evapotranspiration,drought,spi,etccdi,time series,visualization,plotly
 
 homepage=https://caioarantes.github.io/climaplots/
 category=Climate, Visualization
