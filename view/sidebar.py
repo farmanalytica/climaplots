@@ -5,6 +5,8 @@ Replaces the old QTabWidget. Emits one signal per page; the dialog connects
 them to switch the QStackedWidget. Mirrors the sidebar used by the sibling
 plugins (qgis-EasyDEM, terra_valora).
 """
+import os
+
 from qgis.PyQt.QtCore import QEasingCurve, QRectF, Qt, QSize, QVariantAnimation, pyqtSignal
 from qgis.PyQt.QtGui import QColor, QIcon, QPainter, QPen, QPixmap
 from qgis.PyQt.QtWidgets import (
@@ -85,8 +87,20 @@ class Sidebar(QFrame):
 
     def _build(self):
         self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(10, 18, 10, 18)
+        self._layout.setContentsMargins(10, 14, 10, 18)
         self._layout.setSpacing(8)
+
+        # Plugin logo at the top.
+        self.logo = QLabel()
+        self.logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.logo.setStyleSheet("background: transparent; border: none;")
+        logo_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "icon.png"
+        )
+        self._logo_pix = QPixmap(logo_path)
+        self.logo.setFixedHeight(40)
+        self._layout.addWidget(self.logo)
+        self._layout.addSpacing(6)
 
         self._group = QButtonGroup(self)
         self._group.setExclusive(True)
@@ -143,7 +157,10 @@ class Sidebar(QFrame):
     def _apply_expanded_state(self, expanded):
         self._expanded = expanded
         margin = 14 if expanded else 11
-        self._layout.setContentsMargins(margin, 18, margin, 18)
+        self._layout.setContentsMargins(margin, 14, margin, 18)
+        if self._logo_pix is not None and not self._logo_pix.isNull():
+            self.logo.setPixmap(self._logo_pix.scaledToHeight(
+                36 if expanded else 30, Qt.TransformationMode.SmoothTransformation))
         for btn in self._buttons.values():
             btn.setText(btn.property("navText") if expanded else "")
             btn.setToolTip("" if expanded else btn.property("navText"))
