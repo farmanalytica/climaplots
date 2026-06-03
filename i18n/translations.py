@@ -409,3 +409,51 @@ _EXTRA = {
 }
 for _l, _d in _EXTRA.items():
     TRANSLATIONS[_l].update(_d)
+
+
+# --- Appended: comparison-point strings (feature batch 3) --------------------
+SOURCES += [
+    "Comparison point B (optional)", "Leave empty for a single-point analysis",
+    "📍  Pick comparison point B", "📍  Click the map for B…  (click here to cancel)",
+]
+
+_EXTRA_B = {
+    "pt": {
+        "Comparison point B (optional)": "Ponto de comparação B (opcional)",
+        "Leave empty for a single-point analysis": "Deixe vazio para análise de um único ponto",
+        "📍  Pick comparison point B": "📍  Escolher ponto de comparação B",
+        "📍  Click the map for B…  (click here to cancel)": "📍  Clique no mapa para B…  (clique aqui para cancelar)",
+    },
+    "es": {
+        "Comparison point B (optional)": "Punto de comparación B (opcional)",
+        "Leave empty for a single-point analysis": "Déjelo vacío para un análisis de un solo punto",
+        "📍  Pick comparison point B": "📍  Elegir punto de comparación B",
+        "📍  Click the map for B…  (click here to cancel)": "📍  Haga clic en el mapa para B…  (haga clic aquí para cancelar)",
+    },
+    "fr": {
+        "Comparison point B (optional)": "Point de comparaison B (facultatif)",
+        "Leave empty for a single-point analysis": "Laissez vide pour une analyse à point unique",
+        "📍  Pick comparison point B": "📍  Choisir le point de comparaison B",
+        "📍  Click the map for B…  (click here to cancel)": "📍  Cliquez sur la carte pour B…  (cliquez ici pour annuler)",
+    },
+    "it": {
+        "Comparison point B (optional)": "Punto di confronto B (opzionale)",
+        "Leave empty for a single-point analysis": "Lascia vuoto per un'analisi a punto singolo",
+        "📍  Pick comparison point B": "📍  Scegli il punto di confronto B",
+        "📍  Click the map for B…  (click here to cancel)": "📍  Clicca sulla mappa per B…  (clicca qui per annullare)",
+    },
+    "hi": {
+        "Comparison point B (optional)": "तुलना बिंदु B (वैकल्पिक)",
+        "Leave empty for a single-point analysis": "एकल-बिंदु विश्लेषण के लिए खाली छोड़ें",
+        "📍  Pick comparison point B": "📍  तुलना बिंदु B चुनें",
+        "📍  Click the map for B…  (click here to cancel)": "📍  B के लिए मानचित्र पर क्लिक करें…  (रद्द करने के लिए यहाँ क्लिक करें)",
+    },
+    "zh": {
+        "Comparison point B (optional)": "对比点 B（可选）",
+        "Leave empty for a single-point analysis": "留空则进行单点分析",
+        "📍  Pick comparison point B": "📍  选择对比点 B",
+        "📍  Click the map for B…  (click here to cancel)": "📍  点击地图选择 B…（点击此处取消）",
+    },
+}
+for _l, _d in _EXTRA_B.items():
+    TRANSLATIONS[_l].update(_d)

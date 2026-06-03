@@ -60,7 +60,7 @@ _PAGE_TITLES = {
 # canvas remains visible while picking a point; plot pages open wide.
 _PAGE_SIZES = {
     "intro": (820, 560),
-    "coords": (440, 300),
+    "coords": (470, 480),
     "trends": (1020, 620),
     "thermo": (1020, 620),
     "indices": (1020, 620),
@@ -248,9 +248,11 @@ class ClimaPlotsDialog(QDialog):
 
         if self.click_tool is not None:
             self.pick_point.toggled.connect(self._toggle_pick)
+            self.pick_point_b.toggled.connect(self._toggle_pick_b)
             self.click_tool.point_picked.connect(self._on_point_picked)
         else:
             self.pick_point.setEnabled(False)
+            self.pick_point_b.setEnabled(False)
 
     # --------------------------------------------------------------- navigation
     def _goto(self, page_key):
@@ -316,19 +318,37 @@ class ClimaPlotsDialog(QDialog):
         self.index_desc.setText(_tr(pages.index_description(self.atributo_2.currentText())))
 
     def _toggle_pick(self, enabled):
-        """Enter/leave map-click capture mode from the toggle button."""
+        """Enter/leave map-click capture mode for point A."""
         self.pick_point.setText(_tr(pages.PICK_TEXT_ON if enabled else pages.PICK_TEXT_OFF))
         if self.click_tool is None:
             return
         if enabled:
-            self.click_tool.enable()
+            if self.pick_point_b.isChecked():
+                self.pick_point_b.setChecked(False)
+            self.click_tool.enable("A")
         else:
             self.click_tool.disable()
 
-    def _on_point_picked(self, longitude, latitude):
-        """A point was clicked: fill the fields; capture mode stays on."""
-        self.LongEdit.setText(str(longitude))
-        self.LatEdit.setText(str(latitude))
+    def _toggle_pick_b(self, enabled):
+        """Enter/leave map-click capture mode for the comparison point B."""
+        self.pick_point_b.setText(_tr(pages.PICK_B_ON if enabled else pages.PICK_B_OFF))
+        if self.click_tool is None:
+            return
+        if enabled:
+            if self.pick_point.isChecked():
+                self.pick_point.setChecked(False)
+            self.click_tool.enable("B")
+        else:
+            self.click_tool.disable()
+
+    def _on_point_picked(self, longitude, latitude, slot="A"):
+        """A point was clicked: fill the matching fields; capture mode stays on."""
+        if slot == "B":
+            self.LongEditB.setText(str(longitude))
+            self.LatEditB.setText(str(latitude))
+        else:
+            self.LongEdit.setText(str(longitude))
+            self.LatEdit.setText(str(latitude))
 
     # -------------------------------------------------------------- data flow
     def request_api(self):
@@ -351,7 +371,10 @@ class ClimaPlotsDialog(QDialog):
 
         self._worker = AnalysisWorker(
             self.LongEdit.text(), self.LatEdit.text(), settings_manager.get_proxy(),
-            start_year=self.start_year.value(), end_year=self.end_year.value(), parent=self,
+            start_year=self.start_year.value(), end_year=self.end_year.value(),
+            longitude_b=self.LongEditB.text().strip() or None,
+            latitude_b=self.LatEditB.text().strip() or None,
+            parent=self,
         )
         self._worker.finished_ok.connect(self._on_analysis_done)
         self._worker.failed.connect(self._on_analysis_failed)
@@ -396,7 +419,8 @@ class ClimaPlotsDialog(QDialog):
     def plots1(self):
         self._render(1, self.webView_1,
                      lambda d: plot_service.annual_trends(
-                         d.df, self.atributo.currentText(), d.longitude, d.latitude))
+                         d.df, self.atributo.currentText(), d.longitude, d.latitude,
+                         df_b=d.df_b, longitude_b=d.longitude_b, latitude_b=d.latitude_b))
 
     def plots2(self):
         self._render(2, self.webView_2,

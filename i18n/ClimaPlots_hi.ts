@@ -273,5 +273,21 @@ See the QGIS log for details.</source>
         <source>Export failed.</source>
         <translation>निर्यात विफल।</translation>
     </message>
+    <message>
+        <source>Comparison point B (optional)</source>
+        <translation>तुलना बिंदु B (वैकल्पिक)</translation>
+    </message>
+    <message>
+        <source>Leave empty for a single-point analysis</source>
+        <translation>एकल-बिंदु विश्लेषण के लिए खाली छोड़ें</translation>
+    </message>
+    <message>
+        <source>📍  Pick comparison point B</source>
+        <translation>📍  तुलना बिंदु B चुनें</translation>
+    </message>
+    <message>
+        <source>📍  Click the map for B…  (click here to cancel)</source>
+        <translation>📍  B के लिए मानचित्र पर क्लिक करें…  (रद्द करने के लिए यहाँ क्लिक करें)</translation>
+    </message>
 </context>
 </TS>

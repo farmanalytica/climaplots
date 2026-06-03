@@ -26,6 +26,11 @@ class ClimateData:
     indices: Dict[str, pd.DataFrame] = field(default_factory=dict)
     longitude: str = ""
     latitude: str = ""
+    # Optional comparison point B (annual-trends overlay only). df_b is the raw
+    # daily dataframe for B; indices are not computed for the comparison point.
+    df_b: object = None
+    longitude_b: str = ""
+    latitude_b: str = ""
 
 
 @dataclass

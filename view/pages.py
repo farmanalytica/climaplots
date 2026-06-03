@@ -99,9 +99,11 @@ def variable_description(name):
 def index_description(name):
     return INDEX_DESC.get(name, "")
 
-# Labels for the checkable "pick point" toggle (idle / capturing).
+# Labels for the checkable "pick point" toggles (idle / capturing).
 PICK_TEXT_OFF = "📍  Pick a point on the map"
 PICK_TEXT_ON = "📍  Click the map…  (click here to cancel)"
+PICK_B_OFF = "📍  Pick comparison point B"
+PICK_B_ON = "📍  Click the map for B…  (click here to cancel)"
 
 _ICON_SIZE = QSize(16, 16)
 _BTN_HEIGHT = 30
@@ -279,6 +281,28 @@ def setup_coordinates_page(dialog, page):
     years.addStretch(1)
     grid.addLayout(years, 3, 0, 1, 2)
     layout.addWidget(group)
+
+    # Optional comparison point B (overlaid on the Trends chart).
+    group_b = QGroupBox(_tr("Comparison point B (optional)"))
+    grid_b = QGridLayout(group_b)
+    grid_b.setVerticalSpacing(3)
+    grid_b.setContentsMargins(10, 6, 10, 8)
+    dialog.LongEditB = QLineEdit()
+    dialog.LongEditB.setPlaceholderText("e.g. -44.00")
+    dialog.LatEditB = QLineEdit()
+    dialog.LatEditB.setPlaceholderText("e.g. -20.00")
+    grid_b.addWidget(QLabel(_tr("Longitude")), 0, 0)
+    grid_b.addWidget(QLabel(_tr("Latitude")), 0, 1)
+    grid_b.addWidget(dialog.LongEditB, 1, 0)
+    grid_b.addWidget(dialog.LatEditB, 1, 1)
+    dialog.pick_point_b = QPushButton(_tr(PICK_B_OFF))
+    dialog.pick_point_b.setCheckable(True)
+    dialog.pick_point_b.setStyleSheet(STYLE_PICK_TOGGLE)
+    dialog.pick_point_b.setCursor(Qt.CursorShape.PointingHandCursor)
+    dialog.pick_point_b.setMinimumHeight(32)
+    dialog.pick_point_b.setToolTip(_tr("Leave empty for a single-point analysis"))
+    grid_b.addWidget(dialog.pick_point_b, 2, 0, 1, 2)
+    layout.addWidget(group_b)
 
     aux = QHBoxLayout()
     aux.setSpacing(6)

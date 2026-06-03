@@ -10,7 +10,8 @@ from . import indices_service, nasa_power_service
 from .types import ClimateData
 
 
-def run_analysis(longitude, latitude, proxy="", warn=None, start_year=None, end_year=None):
+def run_analysis(longitude, latitude, proxy="", warn=None, start_year=None, end_year=None,
+                 longitude_b=None, latitude_b=None):
     """Fetch climate data and compute indices for a coordinate.
 
     Args:
@@ -22,12 +23,16 @@ def run_analysis(longitude, latitude, proxy="", warn=None, start_year=None, end_
     Returns:
         ClimateData with the raw dataframe and the computed indices.
     """
-    df = nasa_power_service.fetch(
-        longitude, latitude, proxy,
-        start_year=start_year or nasa_power_service.MIN_YEAR,
-        end_year=end_year,
-    )
+    sy = start_year or nasa_power_service.MIN_YEAR
+    df = nasa_power_service.fetch(longitude, latitude, proxy, start_year=sy, end_year=end_year)
     indices = indices_service.compute(df, warn=warn or (lambda _m: None))
+
+    df_b = None
+    if longitude_b not in (None, "") and latitude_b not in (None, ""):
+        # Comparison point: raw series only (no indices), for the trends overlay.
+        df_b = nasa_power_service.fetch(longitude_b, latitude_b, proxy, start_year=sy, end_year=end_year)
+
     return ClimateData(
-        df=df, indices=indices, longitude=str(longitude), latitude=str(latitude)
+        df=df, indices=indices, longitude=str(longitude), latitude=str(latitude),
+        df_b=df_b, longitude_b=str(longitude_b or ""), latitude_b=str(latitude_b or ""),
     )

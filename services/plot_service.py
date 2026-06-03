@@ -40,22 +40,31 @@ _YAXIS_TITLES = {
 }
 
 
-def annual_trends(df, atributo, longitude, latitude):
-    """Annual trend line for one variable, titled with MK + Pettitt results."""
+def _aggregate_annual(df):
+    """Aggregate daily data to annual (totals for SUM vars, means otherwise)."""
     df = df.copy()
     df["Year"] = df["Date"].dt.year
     present = [c for c in _ALL_VARS if c in df.columns]
     sum_cols = [c for c in present if c in _SUM_VARS]
     mean_cols = [c for c in present if c not in _SUM_VARS]
-
     frames = []
     if sum_cols:
         frames.append(df.groupby("Year")[sum_cols].sum())
     if mean_cols:
         frames.append(df.groupby("Year")[mean_cols].mean())
-    df_year = pd.concat(frames, axis=1).reset_index()
-    df_year["Date"] = pd.to_datetime(df_year["Year"].astype(str) + "-01-01")
+    out = pd.concat(frames, axis=1).reset_index()
+    out["Date"] = pd.to_datetime(out["Year"].astype(str) + "-01-01")
+    return out
 
+
+def annual_trends(df, atributo, longitude, latitude,
+                  df_b=None, longitude_b="", latitude_b=""):
+    """Annual trend line for one variable, titled with MK + Pettitt results.
+
+    When ``df_b`` is given, a second series for the comparison point is overlaid
+    (the statistical tests are reported for point A only).
+    """
+    df_year = _aggregate_annual(df)
     if atributo not in df_year.columns:
         raise PlotDataError(
             f"Attribute '{atributo}' is not available for the selected location."
@@ -63,14 +72,25 @@ def annual_trends(df, atributo, longitude, latitude):
 
     df_plot = df_year[["Date", atributo]].copy()
     df_plot.index = df_plot["Date"]
-    df_plot = df_plot[[atributo]].astype(float)
+    title = stats_service.stats_title(df_plot[[atributo]].astype(float))
 
-    title = stats_service.stats_title(df_plot)
-    fig = px.line(
-        df_year, x="Date", y=[atributo],
-        title=f"<b>{atributo}</b> (Long: {longitude} Lat: {latitude}) <br>{title}",
-    )
-    fig.update_layout(showlegend=False)
+    if df_b is not None:
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=df_year["Date"], y=df_year[atributo], mode="lines+markers",
+            name=f"A ({longitude}, {latitude})"))
+        df_year_b = _aggregate_annual(df_b)
+        if atributo in df_year_b.columns:
+            fig.add_trace(go.Scatter(
+                x=df_year_b["Date"], y=df_year_b[atributo], mode="lines+markers",
+                name=f"B ({longitude_b}, {latitude_b})"))
+        fig.update_layout(title=f"<b>{atributo}</b><br>{title}", showlegend=True)
+    else:
+        fig = px.line(
+            df_year, x="Date", y=[atributo],
+            title=f"<b>{atributo}</b> (Long: {longitude} Lat: {latitude}) <br>{title}")
+        fig.update_layout(showlegend=False)
+
     if atributo in _YAXIS_TITLES:
         fig.update_yaxes(title_text=_YAXIS_TITLES[atributo])
     return PlotResult(figure=fig, data=df_year)
