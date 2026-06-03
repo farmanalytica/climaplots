@@ -84,7 +84,7 @@ def compute(df, warn=_noop):
 
     def _period(method, name):
         def build():
-            out = method(ds, period="1M", varname="Precipitation").to_dataframe()
+            out = method(ds, period="ME", varname="Precipitation").to_dataframe()
             out.columns = [name]
             return out
         _try(name, build)
