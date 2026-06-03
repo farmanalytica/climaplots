@@ -9,7 +9,7 @@ of the sibling plugins (terra_valora, qgis-EasyDEM).
 """
 import os
 
-from qgis.PyQt.QtCore import Qt, QUrl
+from qgis.PyQt.QtCore import Qt, QUrl, QSize
 from qgis.PyQt.QtGui import QDesktopServices, QIcon, QPixmap
 from qgis.PyQt.QtWebKitWidgets import QWebPage, QWebView
 from qgis.PyQt.QtWidgets import (
@@ -54,9 +54,39 @@ _INDICES = [
 PICK_TEXT_OFF = "📍  Pick a point on the map"
 PICK_TEXT_ON = "📍  Click the map…  (click here to cancel)"
 
+_ICON_SIZE = QSize(16, 16)
+_BTN_HEIGHT = 30
+
+
 def _icon(name):
     path = os.path.join(_MEDIAS, name)
     return QIcon(path) if os.path.exists(path) else QIcon()
+
+
+def _button(text, icon=None, tooltip="", style=STYLE_BTN, height=_BTN_HEIGHT):
+    """Create a styled button with a consistent icon size, height and cursor."""
+    btn = QPushButton(_icon(icon), text) if icon else QPushButton(text)
+    btn.setStyleSheet(style)
+    btn.setCursor(Qt.CursorShape.PointingHandCursor)
+    if icon:
+        btn.setIconSize(_ICON_SIZE)
+    if tooltip:
+        btn.setToolTip(tooltip)
+    if height:
+        btn.setMinimumHeight(height)
+    return btn
+
+
+def _combo(items, tooltip="", min_width=220):
+    """Create a dropdown with a consistent size and cursor."""
+    cb = QComboBox()
+    cb.addItems(items)
+    if tooltip:
+        cb.setToolTip(tooltip)
+    cb.setMinimumWidth(min_width)
+    cb.setMinimumHeight(28)
+    cb.setCursor(Qt.CursorShape.PointingHandCursor)
+    return cb
 
 
 def _make_webview():
@@ -170,21 +200,21 @@ def setup_coordinates_page(dialog, page):
     dialog.pick_point.setCheckable(True)
     dialog.pick_point.setStyleSheet(STYLE_PICK_TOGGLE)
     dialog.pick_point.setCursor(Qt.CursorShape.PointingHandCursor)
+    dialog.pick_point.setMinimumHeight(32)
     dialog.pick_point.setToolTip("Capture a coordinate by clicking on the map canvas")
     grid.addWidget(dialog.pick_point, 2, 0, 1, 2)
     layout.addWidget(group)
 
-    # Google-layer + Run on a single row to keep the page short.
+    # Satellite-layer + Run on a single row to keep the page short.
     row = QHBoxLayout()
-    dialog.googlemaps = QPushButton(_icon("download.svg"), "Satellite layer")
-    dialog.googlemaps.setStyleSheet(STYLE_BTN)
-    dialog.googlemaps.setCursor(Qt.CursorShape.PointingHandCursor)
-    dialog.googlemaps.setToolTip("Add a Google satellite basemap to help locate your point")
-    dialog.gerar_req = QPushButton(_icon("icons8-reproduzir-50.png"), "Run analysis")
-    dialog.gerar_req.setStyleSheet(STYLE_BTN_PRIMARY)
-    dialog.gerar_req.setCursor(Qt.CursorShape.PointingHandCursor)
-    dialog.gerar_req.setToolTip("Download NASA POWER data for this point and build the charts")
-    dialog.gerar_req.setFixedHeight(34)
+    row.setSpacing(6)
+    dialog.googlemaps = _button(
+        "Satellite layer", "download.svg",
+        "Add a Google satellite basemap to help locate your point", height=34)
+    dialog.gerar_req = _button(
+        "Run analysis", "icons8-reproduzir-50.png",
+        "Download NASA POWER data for this point and build the charts",
+        style=STYLE_BTN_PRIMARY, height=34)
     row.addWidget(dialog.googlemaps)
     row.addWidget(dialog.gerar_req, 1)
     layout.addLayout(row)
@@ -193,10 +223,12 @@ def setup_coordinates_page(dialog, page):
 
 # -------------------------------------------------------------------- plots
 def _plot_page(dialog, page):
-    """Common skeleton: a top button row + an expanding web view below."""
+    """Common skeleton: a top toolbar row + an expanding web view below."""
     layout = QVBoxLayout(page)
-    layout.setContentsMargins(8, 8, 8, 8)
+    layout.setContentsMargins(8, 6, 8, 6)
+    layout.setSpacing(6)
     row = QHBoxLayout()
+    row.setSpacing(6)
     layout.addLayout(row)
     web = _make_webview()
     layout.addWidget(web, 1)
@@ -205,24 +237,19 @@ def _plot_page(dialog, page):
 
 def _toolbar_label(text):
     lbl = QLabel(text)
-    lbl.setStyleSheet("color: #5b6b7b; font-size: 12px; background: transparent;")
+    lbl.setStyleSheet("color: #5b6b7b; font-size: 12px; font-weight: bold; background: transparent;")
     return lbl
 
 
 def setup_trends_page(dialog, page):
     row, web = _plot_page(dialog, page)
-    dialog.atributo = QComboBox()
-    dialog.atributo.addItems(_VARIABLES)
-    dialog.atributo.setToolTip("Choose the climate variable to plot")
-    dialog.save_raw = QPushButton(_icon("diskette.png"), "Save daily data")
-    dialog.save_raw.setToolTip("Export the full daily NASA POWER series as CSV")
-    dialog.navegador = QPushButton(_icon("open-in-browser.svg"), "Open in browser")
-    dialog.navegador.setToolTip("Open this chart full-screen in your web browser")
-    dialog.save_plot = QPushButton(_icon("diskette.png"), "Save chart data")
-    dialog.save_plot.setToolTip("Export the plotted annual series as CSV")
-    for b in (dialog.save_raw, dialog.navegador, dialog.save_plot):
-        b.setStyleSheet(STYLE_BTN)
-        b.setCursor(Qt.CursorShape.PointingHandCursor)
+    dialog.atributo = _combo(_VARIABLES, "Choose the climate variable to plot")
+    dialog.save_raw = _button("Save daily data", "diskette.png",
+                              "Export the full daily NASA POWER series as CSV")
+    dialog.navegador = _button("Open in browser", "open-in-browser.svg",
+                               "Open this chart full-screen in your web browser")
+    dialog.save_plot = _button("Save chart data", "diskette.png",
+                               "Export the plotted annual series as CSV")
     row.addWidget(_toolbar_label("Variable:"))
     row.addWidget(dialog.atributo)
     row.addStretch(1)
@@ -234,13 +261,10 @@ def setup_trends_page(dialog, page):
 
 def setup_thermo_page(dialog, page):
     row, web = _plot_page(dialog, page)
-    dialog.navegador_2 = QPushButton(_icon("open-in-browser.svg"), "Open in browser")
-    dialog.navegador_2.setToolTip("Open this chart full-screen in your web browser")
-    dialog.save_plot2 = QPushButton(_icon("diskette.png"), "Save chart data")
-    dialog.save_plot2.setToolTip("Export the monthly climate normals as CSV")
-    for b in (dialog.navegador_2, dialog.save_plot2):
-        b.setStyleSheet(STYLE_BTN)
-        b.setCursor(Qt.CursorShape.PointingHandCursor)
+    dialog.navegador_2 = _button("Open in browser", "open-in-browser.svg",
+                                 "Open this chart full-screen in your web browser")
+    dialog.save_plot2 = _button("Save chart data", "diskette.png",
+                                "Export the monthly climate normals as CSV")
     row.addWidget(_toolbar_label("Mean monthly precipitation and temperature"))
     row.addStretch(1)
     row.addWidget(dialog.navegador_2)
@@ -250,17 +274,12 @@ def setup_thermo_page(dialog, page):
 
 def setup_indices_page(dialog, page):
     row, web = _plot_page(dialog, page)
-    dialog.atributo_2 = QComboBox()
-    dialog.atributo_2.addItems(_INDICES)
+    dialog.atributo_2 = _combo(_INDICES, "Choose the ETCCDI climate index to plot", min_width=300)
     dialog.atributo_2.setCurrentIndex(0)
-    dialog.atributo_2.setToolTip("Choose the ETCCDI climate index to plot")
-    dialog.navegador_3 = QPushButton(_icon("open-in-browser.svg"), "Open in browser")
-    dialog.navegador_3.setToolTip("Open this chart full-screen in your web browser")
-    dialog.save_plot3 = QPushButton(_icon("diskette.png"), "Save chart data")
-    dialog.save_plot3.setToolTip("Export the selected index series as CSV")
-    for b in (dialog.navegador_3, dialog.save_plot3):
-        b.setStyleSheet(STYLE_BTN)
-        b.setCursor(Qt.CursorShape.PointingHandCursor)
+    dialog.navegador_3 = _button("Open in browser", "open-in-browser.svg",
+                                 "Open this chart full-screen in your web browser")
+    dialog.save_plot3 = _button("Save chart data", "diskette.png",
+                                "Export the selected index series as CSV")
     row.addWidget(_toolbar_label("Index:"))
     row.addWidget(dialog.atributo_2, 1)
     row.addWidget(dialog.navegador_3)
