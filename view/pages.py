@@ -58,9 +58,16 @@ _ICON_SIZE = QSize(16, 16)
 _BTN_HEIGHT = 30
 
 
+_ICONS = os.path.join(_ASSETS, "icons")
+
+
 def _icon(name):
-    path = os.path.join(_MEDIAS, name)
-    return QIcon(path) if os.path.exists(path) else QIcon()
+    """Resolve an icon name against assets/icons (vector set) then medias."""
+    for base in (_ICONS, _MEDIAS):
+        path = os.path.join(base, name)
+        if os.path.exists(path):
+            return QIcon(path)
+    return QIcon()
 
 
 def _button(text, icon=None, tooltip="", style=STYLE_BTN, height=_BTN_HEIGHT):
@@ -209,10 +216,10 @@ def setup_coordinates_page(dialog, page):
     row = QHBoxLayout()
     row.setSpacing(6)
     dialog.googlemaps = _button(
-        "Satellite layer", "download.svg",
+        "Satellite layer", "satellite.svg",
         "Add a Google satellite basemap to help locate your point", height=34)
     dialog.gerar_req = _button(
-        "Run analysis", "icons8-reproduzir-50.png",
+        "Run analysis", "run.svg",
         "Download NASA POWER data for this point and build the charts",
         style=STYLE_BTN_PRIMARY, height=34)
     row.addWidget(dialog.googlemaps)
@@ -248,12 +255,12 @@ def _nav_footer(dialog, back_key=None, next_key=None):
     lay.setContentsMargins(0, 2, 0, 0)
     lay.setSpacing(6)
     if back_key:
-        back = _button("Back", "icons8-back-button-50.png", "Go to the previous page")
+        back = _button("Back", "back.svg", "Go to the previous page")
         back.clicked.connect(lambda: dialog._goto(back_key))
         lay.addWidget(back)
     lay.addStretch(1)
     if next_key:
-        nxt = _button("Next", "icons8-forward-button-50.png", "Go to the next page")
+        nxt = _button("Next", "next.svg", "Go to the next page")
         nxt.clicked.connect(lambda: dialog._goto(next_key))
         lay.addWidget(nxt)
     return bar
@@ -262,11 +269,11 @@ def _nav_footer(dialog, back_key=None, next_key=None):
 def setup_trends_page(dialog, page):
     row, web = _plot_page(dialog, page)
     dialog.atributo = _combo(_VARIABLES, "Choose the climate variable to plot")
-    dialog.save_raw = _button("Save daily data", "diskette.png",
+    dialog.save_raw = _button("Save daily data", "save.svg",
                               "Export the full daily NASA POWER series as CSV")
-    dialog.navegador = _button("Open in browser", "open-in-browser.svg",
+    dialog.navegador = _button("Open in browser", "browser.svg",
                                "Open this chart full-screen in your web browser")
-    dialog.save_plot = _button("Save chart data", "diskette.png",
+    dialog.save_plot = _button("Save chart data", "save.svg",
                                "Export the plotted annual series as CSV")
     row.addWidget(_toolbar_label("Variable:"))
     row.addWidget(dialog.atributo)
@@ -280,9 +287,9 @@ def setup_trends_page(dialog, page):
 
 def setup_thermo_page(dialog, page):
     row, web = _plot_page(dialog, page)
-    dialog.navegador_2 = _button("Open in browser", "open-in-browser.svg",
+    dialog.navegador_2 = _button("Open in browser", "browser.svg",
                                  "Open this chart full-screen in your web browser")
-    dialog.save_plot2 = _button("Save chart data", "diskette.png",
+    dialog.save_plot2 = _button("Save chart data", "save.svg",
                                 "Export the monthly climate normals as CSV")
     row.addWidget(_toolbar_label("Mean monthly precipitation and temperature"))
     row.addStretch(1)
@@ -296,9 +303,9 @@ def setup_indices_page(dialog, page):
     row, web = _plot_page(dialog, page)
     dialog.atributo_2 = _combo(_INDICES, "Choose the ETCCDI climate index to plot", min_width=300)
     dialog.atributo_2.setCurrentIndex(0)
-    dialog.navegador_3 = _button("Open in browser", "open-in-browser.svg",
+    dialog.navegador_3 = _button("Open in browser", "browser.svg",
                                  "Open this chart full-screen in your web browser")
-    dialog.save_plot3 = _button("Save chart data", "diskette.png",
+    dialog.save_plot3 = _button("Save chart data", "save.svg",
                                 "Export the selected index series as CSV")
     row.addWidget(_toolbar_label("Index:"))
     row.addWidget(dialog.atributo_2, 1)
