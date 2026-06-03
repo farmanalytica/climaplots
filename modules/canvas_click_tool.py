@@ -77,7 +77,8 @@ class CanvasClickTool(QObject):
         wgs = transform.transform(point)
         self._draw_marker(point)
         self.point_picked.emit(round(wgs.x(), 4), round(wgs.y(), 4))
-        self.disable()  # single-point capture: turn off after one click
+        # Capture mode stays active until the user toggles it off; each click
+        # just moves the captured point and marker.
 
     def _draw_marker(self, map_point):
         self.clear_marker()

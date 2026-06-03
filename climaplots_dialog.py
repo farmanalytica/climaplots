@@ -268,11 +268,9 @@ class ClimaPlotsDialog(QDialog):
             self.click_tool.disable()
 
     def _on_point_picked(self, longitude, latitude):
-        """A point was clicked: fill the fields and pop the toggle off."""
+        """A point was clicked: fill the fields; capture mode stays on."""
         self.LongEdit.setText(str(longitude))
         self.LatEdit.setText(str(latitude))
-        if self.pick_point.isChecked():
-            self.pick_point.setChecked(False)  # tool already auto-disabled
 
     # -------------------------------------------------------------- data flow
     def request_api(self):
