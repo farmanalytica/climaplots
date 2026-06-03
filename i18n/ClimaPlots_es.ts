@@ -241,5 +241,37 @@ Consulte el registro de QGIS para más detalles.</translation>
         <source>Enter proxy (e.g. http://user:pass@host:port):</source>
         <translation>Ingrese el proxy (ej.: http://usuario:clave@host:puerto):</translation>
     </message>
+    <message>
+        <source>Image</source>
+        <translation>Imagen</translation>
+    </message>
+    <message>
+        <source>Save the chart as a PNG image</source>
+        <translation>Guardar el gráfico como imagen PNG</translation>
+    </message>
+    <message>
+        <source>Save image</source>
+        <translation>Guardar imagen</translation>
+    </message>
+    <message>
+        <source>Export all</source>
+        <translation>Exportar todo</translation>
+    </message>
+    <message>
+        <source>Export every table to one Excel file</source>
+        <translation>Exporta todas las tablas en un archivo Excel</translation>
+    </message>
+    <message>
+        <source>Run an analysis first.</source>
+        <translation>Ejecute un análisis primero.</translation>
+    </message>
+    <message>
+        <source>Saved:</source>
+        <translation>Guardado:</translation>
+    </message>
+    <message>
+        <source>Export failed.</source>
+        <translation>Error en la exportación.</translation>
+    </message>
 </context>
 </TS>

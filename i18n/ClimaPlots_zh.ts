@@ -241,5 +241,37 @@ See the QGIS log for details.</source>
         <source>Enter proxy (e.g. http://user:pass@host:port):</source>
         <translation>输入代理（例如：http://user:pass@host:port）：</translation>
     </message>
+    <message>
+        <source>Image</source>
+        <translation>图像</translation>
+    </message>
+    <message>
+        <source>Save the chart as a PNG image</source>
+        <translation>将图表保存为 PNG 图像</translation>
+    </message>
+    <message>
+        <source>Save image</source>
+        <translation>保存图像</translation>
+    </message>
+    <message>
+        <source>Export all</source>
+        <translation>全部导出</translation>
+    </message>
+    <message>
+        <source>Export every table to one Excel file</source>
+        <translation>将所有表格导出到一个 Excel 文件</translation>
+    </message>
+    <message>
+        <source>Run an analysis first.</source>
+        <translation>请先运行分析。</translation>
+    </message>
+    <message>
+        <source>Saved:</source>
+        <translation>已保存：</translation>
+    </message>
+    <message>
+        <source>Export failed.</source>
+        <translation>导出失败。</translation>
+    </message>
 </context>
 </TS>

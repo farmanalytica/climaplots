@@ -354,3 +354,58 @@ TRANSLATIONS = {
         "Enter proxy (e.g. http://user:pass@host:port):": "输入代理（例如：http://user:pass@host:port）：",
     },
 }
+
+
+# --- Appended: export / image strings (feature batch 2) ----------------------
+SOURCES += [
+    "Image", "Save the chart as a PNG image", "Save image",
+    "Export all", "Export every table to one Excel file",
+    "Run an analysis first.", "Saved:", "Export failed.",
+]
+
+_EXTRA = {
+    "pt": {
+        "Image": "Imagem", "Save the chart as a PNG image": "Salvar o gráfico como imagem PNG",
+        "Save image": "Salvar imagem", "Export all": "Exportar tudo",
+        "Export every table to one Excel file": "Exporta todas as tabelas em um arquivo Excel",
+        "Run an analysis first.": "Execute uma análise primeiro.",
+        "Saved:": "Salvo:", "Export failed.": "Falha na exportação.",
+    },
+    "es": {
+        "Image": "Imagen", "Save the chart as a PNG image": "Guardar el gráfico como imagen PNG",
+        "Save image": "Guardar imagen", "Export all": "Exportar todo",
+        "Export every table to one Excel file": "Exporta todas las tablas en un archivo Excel",
+        "Run an analysis first.": "Ejecute un análisis primero.",
+        "Saved:": "Guardado:", "Export failed.": "Error en la exportación.",
+    },
+    "fr": {
+        "Image": "Image", "Save the chart as a PNG image": "Enregistrer le graphique en image PNG",
+        "Save image": "Enregistrer l'image", "Export all": "Tout exporter",
+        "Export every table to one Excel file": "Exporte toutes les tables dans un fichier Excel",
+        "Run an analysis first.": "Lancez d'abord une analyse.",
+        "Saved:": "Enregistré :", "Export failed.": "Échec de l'export.",
+    },
+    "it": {
+        "Image": "Immagine", "Save the chart as a PNG image": "Salva il grafico come immagine PNG",
+        "Save image": "Salva immagine", "Export all": "Esporta tutto",
+        "Export every table to one Excel file": "Esporta tutte le tabelle in un file Excel",
+        "Run an analysis first.": "Esegui prima un'analisi.",
+        "Saved:": "Salvato:", "Export failed.": "Esportazione non riuscita.",
+    },
+    "hi": {
+        "Image": "छवि", "Save the chart as a PNG image": "चार्ट को PNG छवि के रूप में सहेजें",
+        "Save image": "छवि सहेजें", "Export all": "सब निर्यात करें",
+        "Export every table to one Excel file": "सभी तालिकाओं को एक Excel फ़ाइल में निर्यात करें",
+        "Run an analysis first.": "पहले एक विश्लेषण चलाएँ।",
+        "Saved:": "सहेजा गया:", "Export failed.": "निर्यात विफल।",
+    },
+    "zh": {
+        "Image": "图像", "Save the chart as a PNG image": "将图表保存为 PNG 图像",
+        "Save image": "保存图像", "Export all": "全部导出",
+        "Export every table to one Excel file": "将所有表格导出到一个 Excel 文件",
+        "Run an analysis first.": "请先运行分析。",
+        "Saved:": "已保存：", "Export failed.": "导出失败。",
+    },
+}
+for _l, _d in _EXTRA.items():
+    TRANSLATIONS[_l].update(_d)

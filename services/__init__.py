@@ -11,6 +11,7 @@ Modules:
     types               - ClimateData / PlotResult dataclasses
 """
 from . import (  # noqa: F401
+    export_service,
     indices_service,
     nasa_power_service,
     orchestrator,

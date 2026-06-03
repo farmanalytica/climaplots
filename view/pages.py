@@ -353,12 +353,18 @@ def setup_trends_page(dialog, page):
                                _tr("Open this chart full-screen in your web browser"))
     dialog.save_plot = _button(_tr("Save chart data"), "save.svg",
                                _tr("Export the plotted annual series as CSV"))
+    dialog.save_img = _button(_tr("Image"), "browser.svg",
+                              _tr("Save the chart as a PNG image"))
+    dialog.export_all = _button(_tr("Export all"), "save.svg",
+                                _tr("Export every table to one Excel file"))
     row.addWidget(_toolbar_label(_tr("Variable:")))
     row.addWidget(dialog.atributo)
     row.addStretch(1)
     row.addWidget(dialog.save_raw)
     row.addWidget(dialog.navegador)
     row.addWidget(dialog.save_plot)
+    row.addWidget(dialog.save_img)
+    row.addWidget(dialog.export_all)
     dialog.webView_1 = web
     page.layout().addWidget(_nav_footer(dialog, back_key="coords", next_key="thermo"))
 
@@ -370,10 +376,13 @@ def setup_thermo_page(dialog, page):
                                  _tr("Open this chart full-screen in your web browser"))
     dialog.save_plot2 = _button(_tr("Save chart data"), "save.svg",
                                 _tr("Export the monthly climate normals as CSV"))
+    dialog.save_img2 = _button(_tr("Image"), "browser.svg",
+                               _tr("Save the chart as a PNG image"))
     row.addWidget(_toolbar_label(_tr("Mean monthly precipitation and temperature")))
     row.addStretch(1)
     row.addWidget(dialog.navegador_2)
     row.addWidget(dialog.save_plot2)
+    row.addWidget(dialog.save_img2)
     dialog.webView_2 = web
     page.layout().addWidget(_nav_footer(dialog, back_key="trends", next_key="indices"))
 
@@ -386,9 +395,12 @@ def setup_indices_page(dialog, page):
                                  _tr("Open this chart full-screen in your web browser"))
     dialog.save_plot3 = _button(_tr("Save chart data"), "save.svg",
                                 _tr("Export the selected index series as CSV"))
+    dialog.save_img3 = _button(_tr("Image"), "browser.svg",
+                               _tr("Save the chart as a PNG image"))
     row.addWidget(_toolbar_label(_tr("Index:")))
     row.addWidget(dialog.atributo_2, 1)
     row.addWidget(dialog.navegador_3)
     row.addWidget(dialog.save_plot3)
+    row.addWidget(dialog.save_img3)
     dialog.webView_3 = web
     page.layout().addWidget(_nav_footer(dialog, back_key="thermo"))

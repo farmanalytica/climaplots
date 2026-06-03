@@ -23,6 +23,7 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog,
     QDialogButtonBox,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -37,7 +38,7 @@ import webbrowser
 
 from .modules import map_tools, save_utils
 from .modules.canvas_click_tool import CanvasClickTool
-from .services import plot_service, settings_manager
+from .services import export_service, plot_service, settings_manager
 from .view import Sidebar, pages, plotly_view
 from .view.styles import STYLE_BTN_HELP, STYLE_BTN_SUBTLE, STYLE_DIALOG
 from .workers import AnalysisWorker
@@ -240,6 +241,10 @@ class ClimaPlotsDialog(QDialog):
         self.googlemaps.clicked.connect(map_tools.hybrid_function)
         self.proxy.clicked.connect(self.open_proxy_dialog)
         self.clear_mark.clicked.connect(self._clear_marker)
+        self.save_img.clicked.connect(lambda: self._save_png(1))
+        self.save_img2.clicked.connect(lambda: self._save_png(2))
+        self.save_img3.clicked.connect(lambda: self._save_png(3))
+        self.export_all.clicked.connect(self._export_all)
 
         if self.click_tool is not None:
             self.pick_point.toggled.connect(self._toggle_pick)
@@ -275,6 +280,31 @@ class ClimaPlotsDialog(QDialog):
         return self.stack.currentWidget() is self.coords_page
 
     # ----------------------------------------------------------- clicking mode
+    def _save_png(self, tab):
+        """Grab the rendered chart from its web view and save as PNG."""
+        if self._figs.get(tab) is None:
+            return
+        name = {1: "annual_trends", 2: "thermo_pluviometric", 3: "climate_index"}[tab]
+        path, _ = QFileDialog.getSaveFileName(
+            self, _tr("Save image"), name + ".png", "PNG (*.png)")
+        if path:
+            self._web_view(tab).grab().save(path)
+
+    def _export_all(self):
+        """Export raw data, annual/thermo tables and all indices to one file."""
+        if self.climate_data is None:
+            QMessageBox.warning(self, "ClimaPlots", _tr("Run an analysis first."))
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self, _tr("Export all"), "climaplots.xlsx", "Excel (*.xlsx)")
+        if not path:
+            return
+        try:
+            out = export_service.export(path, self.climate_data, self._save_data)
+            QMessageBox.information(self, "ClimaPlots", _tr("Saved:") + " " + out)
+        except Exception as e:  # noqa: BLE001
+            QMessageBox.warning(self, "ClimaPlots", _tr("Export failed.") + "\n" + str(e))
+
     def _clear_marker(self):
         if self.click_tool is not None:
             self.click_tool.clear_marker()

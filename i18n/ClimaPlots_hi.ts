@@ -241,5 +241,37 @@ See the QGIS log for details.</source>
         <source>Enter proxy (e.g. http://user:pass@host:port):</source>
         <translation>प्रॉक्सी दर्ज करें (उदा.: http://user:pass@host:port):</translation>
     </message>
+    <message>
+        <source>Image</source>
+        <translation>छवि</translation>
+    </message>
+    <message>
+        <source>Save the chart as a PNG image</source>
+        <translation>चार्ट को PNG छवि के रूप में सहेजें</translation>
+    </message>
+    <message>
+        <source>Save image</source>
+        <translation>छवि सहेजें</translation>
+    </message>
+    <message>
+        <source>Export all</source>
+        <translation>सब निर्यात करें</translation>
+    </message>
+    <message>
+        <source>Export every table to one Excel file</source>
+        <translation>सभी तालिकाओं को एक Excel फ़ाइल में निर्यात करें</translation>
+    </message>
+    <message>
+        <source>Run an analysis first.</source>
+        <translation>पहले एक विश्लेषण चलाएँ।</translation>
+    </message>
+    <message>
+        <source>Saved:</source>
+        <translation>सहेजा गया:</translation>
+    </message>
+    <message>
+        <source>Export failed.</source>
+        <translation>निर्यात विफल।</translation>
+    </message>
 </context>
 </TS>
