@@ -246,6 +246,7 @@ class ClimaPlotsDialog(QDialog):
         self.stack.setCurrentWidget(page)
         self.sidebar.set_active_page(page_key)
         self._header_title.setText(_PAGE_TITLES.get(page_key, ""))
+        self.proxy.setVisible(page_key == "intro")
         if page_key in _PAGE_SIZES:
             self.resize(*_PAGE_SIZES[page_key])
 
