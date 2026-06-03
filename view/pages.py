@@ -228,6 +228,7 @@ def setup_coordinates_page(dialog, page):
     dialog.end_year.setToolTip("Last year to download")
     years = QHBoxLayout()
     years.setSpacing(6)
+    years.addStretch(1)
     years.addWidget(QLabel("Years"))
     years.addWidget(dialog.start_year)
     years.addWidget(QLabel("to"))
