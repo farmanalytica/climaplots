@@ -18,7 +18,7 @@ QtWebKit/plotly fix mirrors qgis-AGLgis.
 """
 import qgis
 from qgis.core import QgsApplication, QgsMessageLog, Qgis
-from qgis.PyQt.QtCore import Qt, QTimer
+from qgis.PyQt.QtCore import QCoreApplication, Qt, QTimer
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog,
@@ -41,6 +41,10 @@ from .services import plot_service, settings_manager
 from .view import Sidebar, pages, plotly_view
 from .view.styles import STYLE_BTN_HELP, STYLE_BTN_SUBTLE, STYLE_DIALOG
 from .workers import AnalysisWorker
+
+
+def _tr(text):
+    return QCoreApplication.translate("ClimaPlots", text)
 
 # Header page-title shown per page (mirrors AGLgis's dynamic header title).
 _PAGE_TITLES = {
@@ -76,10 +80,11 @@ _PLOT_CONFIG = {
     ],
 }
 
-_LOADING_HTML = (
-    "<html><body style='font-family:sans-serif;color:#555;text-align:center;"
-    "margin-top:40px'><h3>Fetching climate data...</h3></body></html>"
-)
+def _loading_html():
+    return (
+        "<html><body style='font-family:sans-serif;color:#555;text-align:center;"
+        "margin-top:40px'><h3>" + _tr("Fetching climate data...") + "</h3></body></html>"
+    )
 
 
 class ClimaPlotsDialog(QDialog):
@@ -114,6 +119,8 @@ class ClimaPlotsDialog(QDialog):
         self._coords_visited = False        # auto-enable pick on first visit
 
         self._connect_ui_signals()
+        self._update_var_desc()
+        self._update_index_desc()
         self.language = QgsApplication.instance().locale()[:2]
         self._goto("intro")
 
@@ -188,22 +195,22 @@ class ClimaPlotsDialog(QDialog):
         sep.setStyleSheet("color: #d0d9e2; font-size: 16px;")
         lay.addWidget(sep)
 
-        self._header_title = QLabel(_PAGE_TITLES["intro"])
+        self._header_title = QLabel(_tr(_PAGE_TITLES["intro"]))
         self._header_title.setStyleSheet("color: #5b6b7b; font-size: 13px; margin-left: 6px;")
         lay.addWidget(self._header_title)
 
         lay.addStretch()
 
         # Proxy settings tucked into the top-right corner (subtle link style).
-        self.proxy = QPushButton("Proxy settings")
+        self.proxy = QPushButton(_tr("Proxy settings"))
         self.proxy.setCursor(Qt.CursorShape.PointingHandCursor)
         self.proxy.setStyleSheet(STYLE_BTN_SUBTLE)
-        self.proxy.setToolTip("Proxy setting (only if required by your network provider)")
+        self.proxy.setToolTip(_tr("Proxy setting (only if required by your network provider)"))
         lay.addWidget(self.proxy)
 
         help_btn = QPushButton("?")
         help_btn.setFixedSize(28, 28)
-        help_btn.setToolTip("Learn more about this plugin")
+        help_btn.setToolTip(_tr("Learn more about this plugin"))
         help_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         help_btn.setStyleSheet(STYLE_BTN_HELP)
         help_btn.clicked.connect(self.open_learn_dialog)
@@ -227,9 +234,12 @@ class ClimaPlotsDialog(QDialog):
         self.rejected.connect(self.fun_fechou)
         self.gerar_req.clicked.connect(self.request_api)
         self.atributo.currentTextChanged.connect(self.plots1)
+        self.atributo.currentTextChanged.connect(self._update_var_desc)
         self.atributo_2.currentTextChanged.connect(self.plots3)
+        self.atributo_2.currentTextChanged.connect(self._update_index_desc)
         self.googlemaps.clicked.connect(map_tools.hybrid_function)
         self.proxy.clicked.connect(self.open_proxy_dialog)
+        self.clear_mark.clicked.connect(self._clear_marker)
 
         if self.click_tool is not None:
             self.pick_point.toggled.connect(self._toggle_pick)
@@ -246,7 +256,7 @@ class ClimaPlotsDialog(QDialog):
         page.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.stack.setCurrentWidget(page)
         self.sidebar.set_active_page(page_key)
-        self._header_title.setText(_PAGE_TITLES.get(page_key, ""))
+        self._header_title.setText(_tr(_PAGE_TITLES.get(page_key, "")))
         self.proxy.setVisible(page_key == "intro")
         if page_key in _PAGE_SIZES:
             self.resize(*_PAGE_SIZES[page_key])
@@ -265,9 +275,19 @@ class ClimaPlotsDialog(QDialog):
         return self.stack.currentWidget() is self.coords_page
 
     # ----------------------------------------------------------- clicking mode
+    def _clear_marker(self):
+        if self.click_tool is not None:
+            self.click_tool.clear_marker()
+
+    def _update_var_desc(self):
+        self.var_desc.setText(_tr(pages.variable_description(self.atributo.currentText())))
+
+    def _update_index_desc(self):
+        self.index_desc.setText(_tr(pages.index_description(self.atributo_2.currentText())))
+
     def _toggle_pick(self, enabled):
         """Enter/leave map-click capture mode from the toggle button."""
-        self.pick_point.setText(pages.PICK_TEXT_ON if enabled else pages.PICK_TEXT_OFF)
+        self.pick_point.setText(_tr(pages.PICK_TEXT_ON if enabled else pages.PICK_TEXT_OFF))
         if self.click_tool is None:
             return
         if enabled:
@@ -287,15 +307,15 @@ class ClimaPlotsDialog(QDialog):
             return  # re-entrancy guard
 
         if not self.LongEdit.text().strip() or not self.LatEdit.text().strip():
-            QMessageBox.warning(self, "Missing coordinates",
-                                "Click a point on the map (or enter Longitude/Latitude) first.")
+            QMessageBox.warning(self, _tr("Missing coordinates"),
+                                _tr("Click a point on the map (or enter Longitude/Latitude) first."))
             return
 
         self._reset_results()
         QApplication.setOverrideCursor(Qt.WaitCursor)
         for view in (self.webView_1, self.webView_2, self.webView_3):
             try:
-                view.setHtml(_LOADING_HTML)
+                view.setHtml(_loading_html())
             except Exception:
                 pass
 
@@ -340,8 +360,7 @@ class ClimaPlotsDialog(QDialog):
             self._figs[tab] = None
             self._save_data[tab] = None
             self._tmp_paths_clear(tab)
-        if self.click_tool is not None:
-            self.click_tool.clear_marker()
+        # The map marker is intentionally kept across runs (use "Clear marker").
 
     # ----------------------------------------------------------- plot rendering
     def plots1(self):
@@ -365,7 +384,7 @@ class ClimaPlotsDialog(QDialog):
         try:
             result = builder(self.climate_data)
         except plot_service.PlotDataError as e:
-            QMessageBox.warning(self, "Data not available", str(e))
+            QMessageBox.warning(self, _tr("Data not available"), str(e))
             return
         except Exception as e:  # noqa: BLE001
             QgsMessageLog.logMessage(f"Plot {tab} failed: {e}", "ClimaPlots", Qgis.Warning)
@@ -404,9 +423,9 @@ class ClimaPlotsDialog(QDialog):
     # ------------------------------------------------------------------ dialogs
     def open_proxy_dialog(self):
         dialog = QDialog(self)
-        dialog.setWindowTitle("Proxy Settings")
+        dialog.setWindowTitle(_tr("Proxy Settings"))
         layout = QVBoxLayout(dialog)
-        layout.addWidget(QLabel("Enter proxy (e.g. http://user:pass@host:port):"))
+        layout.addWidget(QLabel(_tr("Enter proxy (e.g. http://user:pass@host:port):")))
         proxy_edit = QLineEdit()
         proxy_edit.setText(settings_manager.get_proxy())
         layout.addWidget(proxy_edit)

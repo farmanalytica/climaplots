@@ -7,7 +7,7 @@ plugins (qgis-EasyDEM, terra_valora).
 """
 import os
 
-from qgis.PyQt.QtCore import QEasingCurve, QRectF, Qt, QSize, QVariantAnimation, pyqtSignal
+from qgis.PyQt.QtCore import QCoreApplication, QEasingCurve, QRectF, Qt, QSize, QVariantAnimation, pyqtSignal
 from qgis.PyQt.QtGui import QColor, QIcon, QPainter, QPen, QPixmap
 from qgis.PyQt.QtWidgets import (
     QButtonGroup,
@@ -27,6 +27,10 @@ from .styles import (
     SIDEBAR_MUTED,
     SIDEBAR_TEXT,
 )
+
+def _tr(text):
+    return QCoreApplication.translate("ClimaPlots", text)
+
 
 # (page key, label, icon kind)
 _PAGES = [
@@ -113,7 +117,7 @@ class Sidebar(QFrame):
             "indices": self.indices_requested,
         }
         for key, label, kind in _PAGES:
-            btn = self._make_button(label, kind)
+            btn = self._make_button(_tr(label), kind)
             btn.clicked.connect(signal_for[key].emit)
             self._buttons[key] = btn
             self._group.addButton(btn)

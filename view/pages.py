@@ -10,7 +10,7 @@ of the sibling plugins (terra_valora, qgis-EasyDEM).
 import datetime
 import os
 
-from qgis.PyQt.QtCore import Qt, QUrl, QSize
+from qgis.PyQt.QtCore import QCoreApplication, Qt, QUrl, QSize
 from qgis.PyQt.QtGui import QDesktopServices, QIcon, QPixmap
 from qgis.PyQt.QtWebKitWidgets import QWebPage, QWebView
 from qgis.PyQt.QtWidgets import (
@@ -31,6 +31,10 @@ _MIN_YEAR = 1981
 _MAX_YEAR = datetime.date.today().year - 1
 
 from .styles import STYLE_BTN, STYLE_BTN_PRIMARY, STYLE_PICK_TOGGLE
+
+
+def _tr(text):
+    return QCoreApplication.translate("ClimaPlots", text)
 
 _PLUGIN_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _MEDIAS = os.path.join(_PLUGIN_DIR, "medias")
@@ -55,6 +59,45 @@ _INDICES = [
     "Number of Consecutive Wet Days in a Month",
     "The Standardized Precipitation Index (SPI)",
 ]
+
+# Short, one-line explanations shown under the dropdown when an item is picked.
+VARIABLE_DESC = {
+    "Max Temperature": "Daily maximum air temperature at 2 m (°C).",
+    "Min Temperature": "Daily minimum air temperature at 2 m (°C).",
+    "Precipitation": "Daily total precipitation (mm).",
+    "Relative Humidity": "Mean relative humidity at 2 m (%).",
+    "Irradiation": "All-sky surface shortwave irradiation (kWh/m²/day).",
+    "Wind Speed": "Mean wind speed at 2 m (m/s).",
+    "Reference ET0": "Reference evapotranspiration, Hargreaves method (mm).",
+    "Growing Degree Days": "Heat accumulation above a 10 °C base (°C·day).",
+}
+INDEX_DESC = {
+    "Annual Summer Days": "Annual count of days with Tmax > 25 °C.",
+    "Annual Frost Days": "Annual count of days with Tmin < 0 °C.",
+    "Annual Tropical Nights": "Annual count of nights with Tmin > 20 °C.",
+    "Annual Icing Days": "Annual count of days with Tmax < 0 °C.",
+    "Monthly Maximum Temperature": "Monthly highest daily maximum temperature (TXx).",
+    "Monthly Minimum Temperature of Maximum Temperatures": "Monthly lowest daily maximum temperature (TXn).",
+    "Monthly Maximum Temperature of Minimum Temperatures": "Monthly highest daily minimum temperature (TNx).",
+    "Monthly Minimum Temperature": "Monthly lowest daily minimum temperature (TNn).",
+    "Daily Temperature Range": "Mean difference between daily max and min (DTR).",
+    "Monthly Maximum 1-day Precipitation": "Highest 1-day precipitation each month (Rx1day).",
+    "Monthly Maximum 5-day Precipitation": "Highest 5-day precipitation total each month (Rx5day).",
+    "Annual Count of Days when Precipitation Exceeds 10mm": "Annual count of days with ≥ 10 mm (R10mm).",
+    "Annual Count of Days when Precipitation Exceeds 20mm": "Annual count of days with ≥ 20 mm (R20mm).",
+    "Simple Precipitation Intensity Index": "Mean precipitation on wet days (SDII).",
+    "Number of Consecutive Dry Days in a Month": "Longest dry spell each month (CDD).",
+    "Number of Consecutive Wet Days in a Month": "Longest wet spell each month (CWD).",
+    "The Standardized Precipitation Index (SPI)": "90-day standardized precipitation anomaly (SPI).",
+}
+
+
+def variable_description(name):
+    return VARIABLE_DESC.get(name, "")
+
+
+def index_description(name):
+    return INDEX_DESC.get(name, "")
 
 # Labels for the checkable "pick point" toggle (idle / capturing).
 PICK_TEXT_OFF = "📍  Pick a point on the map"
@@ -129,7 +172,7 @@ def setup_intro_page(dialog, page):
     btn_row = QHBoxLayout()
     btn_row.setContentsMargins(0, 10, 0, 8)
     btn_row.addStretch(1)
-    start_btn = QPushButton("Get Started")
+    start_btn = QPushButton(_tr("Get Started"))
     start_btn.setStyleSheet(STYLE_BTN_PRIMARY)
     start_btn.setFixedHeight(40)
     start_btn.setMinimumWidth(180)
@@ -178,10 +221,10 @@ def _build_sponsor():
     farm_text.setOpenExternalLinks(True)
     farm_text.setWordWrap(True)
     farm_text.setText(
-        "This is a free and open project, supported by "
-        '<a href="https://farmanalytica.com.br" style="color:#2c6cab;'
+        _tr("This is a free and open project, supported by ")
+        + '<a href="https://farmanalytica.com.br" style="color:#2c6cab;'
         'text-decoration:none;font-weight:bold;">FARM Analytica</a>. '
-        "Get in touch for exclusive and personalized commercial solutions."
+        + _tr("Get in touch for exclusive and personalized commercial solutions.")
     )
     farm_text.setStyleSheet("color: #9e9e9e; font-size: 9px;")
     farm_text.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
@@ -195,59 +238,66 @@ def setup_coordinates_page(dialog, page):
     layout.setContentsMargins(14, 10, 14, 10)
     layout.setSpacing(6)
 
-    group = QGroupBox("Location")
+    group = QGroupBox(_tr("Location"))
     grid = QGridLayout(group)
     grid.setVerticalSpacing(3)
     grid.setContentsMargins(10, 6, 10, 8)
     dialog.LongEdit = QLineEdit()
     dialog.LongEdit.setPlaceholderText("e.g. -47.06")
-    dialog.LongEdit.setToolTip("Longitude in decimal degrees (WGS84)")
+    dialog.LongEdit.setToolTip(_tr("Longitude in decimal degrees (WGS84)"))
     dialog.LatEdit = QLineEdit()
     dialog.LatEdit.setPlaceholderText("e.g. -22.90")
-    dialog.LatEdit.setToolTip("Latitude in decimal degrees (WGS84)")
-    grid.addWidget(QLabel("Longitude"), 0, 0)
-    grid.addWidget(QLabel("Latitude"), 0, 1)
+    dialog.LatEdit.setToolTip(_tr("Latitude in decimal degrees (WGS84)"))
+    grid.addWidget(QLabel(_tr("Longitude")), 0, 0)
+    grid.addWidget(QLabel(_tr("Latitude")), 0, 1)
     grid.addWidget(dialog.LongEdit, 1, 0)
     grid.addWidget(dialog.LatEdit, 1, 1)
-    dialog.pick_point = QPushButton(PICK_TEXT_OFF)
+    dialog.pick_point = QPushButton(_tr(PICK_TEXT_OFF))
     dialog.pick_point.setCheckable(True)
     dialog.pick_point.setStyleSheet(STYLE_PICK_TOGGLE)
     dialog.pick_point.setCursor(Qt.CursorShape.PointingHandCursor)
     dialog.pick_point.setMinimumHeight(32)
-    dialog.pick_point.setToolTip("Capture a coordinate by clicking on the map canvas")
+    dialog.pick_point.setToolTip(_tr("Capture a coordinate by clicking on the map canvas"))
     grid.addWidget(dialog.pick_point, 2, 0, 1, 2)
 
     # Year range (NASA POWER daily data starts in 1981).
     dialog.start_year = QSpinBox()
     dialog.start_year.setRange(_MIN_YEAR, _MAX_YEAR)
     dialog.start_year.setValue(_MIN_YEAR)
-    dialog.start_year.setToolTip("First year to download")
+    dialog.start_year.setToolTip(_tr("First year to download"))
     dialog.end_year = QSpinBox()
     dialog.end_year.setRange(_MIN_YEAR, _MAX_YEAR)
     dialog.end_year.setValue(_MAX_YEAR)
-    dialog.end_year.setToolTip("Last year to download")
+    dialog.end_year.setToolTip(_tr("Last year to download"))
     years = QHBoxLayout()
     years.setSpacing(6)
     years.addStretch(1)
-    years.addWidget(QLabel("Years"))
+    years.addWidget(QLabel(_tr("Years")))
     years.addWidget(dialog.start_year)
-    years.addWidget(QLabel("to"))
+    years.addWidget(QLabel(_tr("to")))
     years.addWidget(dialog.end_year)
     years.addStretch(1)
     grid.addLayout(years, 3, 0, 1, 2)
     layout.addWidget(group)
 
+    aux = QHBoxLayout()
+    aux.setSpacing(6)
     dialog.googlemaps = _button(
-        "Satellite layer", "satellite.svg",
-        "Add a Google satellite basemap to help locate your point", height=34)
-    layout.addWidget(dialog.googlemaps)
+        _tr("Satellite layer"), "satellite.svg",
+        _tr("Add a Google satellite basemap to help locate your point"), height=34)
+    dialog.clear_mark = _button(
+        _tr("Clear marker"), None,
+        _tr("Remove the point marker from the map"), height=34)
+    aux.addWidget(dialog.googlemaps)
+    aux.addWidget(dialog.clear_mark)
+    layout.addLayout(aux)
 
     layout.addStretch(1)
 
     # Run analysis anchored at the bottom of the page (full width).
     dialog.gerar_req = _button(
-        "Run analysis", "run.svg",
-        "Download NASA POWER data for this point and build the charts",
+        _tr("Run analysis"), "run.svg",
+        _tr("Download NASA POWER data for this point and build the charts"),
         style=STYLE_BTN_PRIMARY, height=38)
     layout.addWidget(dialog.gerar_req)
 
@@ -261,9 +311,13 @@ def _plot_page(dialog, page):
     row = QHBoxLayout()
     row.setSpacing(6)
     layout.addLayout(row)
+    desc = QLabel()
+    desc.setWordWrap(True)
+    desc.setStyleSheet("color:#6b7b8b;font-size:11px;font-style:italic;background:transparent;")
+    layout.addWidget(desc)
     web = _make_webview()
     layout.addWidget(web, 1)
-    return row, web
+    return row, web, desc
 
 
 def _toolbar_label(text):
@@ -279,27 +333,27 @@ def _nav_footer(dialog, back_key=None, next_key=None):
     lay.setContentsMargins(0, 2, 0, 0)
     lay.setSpacing(6)
     if back_key:
-        back = _button("Back", "back.svg", "Go to the previous page")
+        back = _button(_tr("Back"), "back.svg", _tr("Go to the previous page"))
         back.clicked.connect(lambda: dialog._goto(back_key))
         lay.addWidget(back)
     lay.addStretch(1)
     if next_key:
-        nxt = _button("Next", "next.svg", "Go to the next page")
+        nxt = _button(_tr("Next"), "next.svg", _tr("Go to the next page"))
         nxt.clicked.connect(lambda: dialog._goto(next_key))
         lay.addWidget(nxt)
     return bar
 
 
 def setup_trends_page(dialog, page):
-    row, web = _plot_page(dialog, page)
-    dialog.atributo = _combo(_VARIABLES, "Choose the climate variable to plot")
-    dialog.save_raw = _button("Save daily data", "save.svg",
-                              "Export the full daily NASA POWER series as CSV")
-    dialog.navegador = _button("Open in browser", "browser.svg",
-                               "Open this chart full-screen in your web browser")
-    dialog.save_plot = _button("Save chart data", "save.svg",
-                               "Export the plotted annual series as CSV")
-    row.addWidget(_toolbar_label("Variable:"))
+    row, web, dialog.var_desc = _plot_page(dialog, page)
+    dialog.atributo = _combo(_VARIABLES, _tr("Choose the climate variable to plot"))
+    dialog.save_raw = _button(_tr("Save daily data"), "save.svg",
+                              _tr("Export the full daily NASA POWER series as CSV"))
+    dialog.navegador = _button(_tr("Open in browser"), "browser.svg",
+                               _tr("Open this chart full-screen in your web browser"))
+    dialog.save_plot = _button(_tr("Save chart data"), "save.svg",
+                               _tr("Export the plotted annual series as CSV"))
+    row.addWidget(_toolbar_label(_tr("Variable:")))
     row.addWidget(dialog.atributo)
     row.addStretch(1)
     row.addWidget(dialog.save_raw)
@@ -310,12 +364,13 @@ def setup_trends_page(dialog, page):
 
 
 def setup_thermo_page(dialog, page):
-    row, web = _plot_page(dialog, page)
-    dialog.navegador_2 = _button("Open in browser", "browser.svg",
-                                 "Open this chart full-screen in your web browser")
-    dialog.save_plot2 = _button("Save chart data", "save.svg",
-                                "Export the monthly climate normals as CSV")
-    row.addWidget(_toolbar_label("Mean monthly precipitation and temperature"))
+    row, web, _thermo_desc = _plot_page(dialog, page)
+    _thermo_desc.setText(_tr("Mean monthly precipitation (bars) and mean temperatures (lines) across the year."))
+    dialog.navegador_2 = _button(_tr("Open in browser"), "browser.svg",
+                                 _tr("Open this chart full-screen in your web browser"))
+    dialog.save_plot2 = _button(_tr("Save chart data"), "save.svg",
+                                _tr("Export the monthly climate normals as CSV"))
+    row.addWidget(_toolbar_label(_tr("Mean monthly precipitation and temperature")))
     row.addStretch(1)
     row.addWidget(dialog.navegador_2)
     row.addWidget(dialog.save_plot2)
@@ -324,14 +379,14 @@ def setup_thermo_page(dialog, page):
 
 
 def setup_indices_page(dialog, page):
-    row, web = _plot_page(dialog, page)
-    dialog.atributo_2 = _combo(_INDICES, "Choose the ETCCDI climate index to plot", min_width=300)
+    row, web, dialog.index_desc = _plot_page(dialog, page)
+    dialog.atributo_2 = _combo(_INDICES, _tr("Choose the ETCCDI climate index to plot"), min_width=300)
     dialog.atributo_2.setCurrentIndex(0)
-    dialog.navegador_3 = _button("Open in browser", "browser.svg",
-                                 "Open this chart full-screen in your web browser")
-    dialog.save_plot3 = _button("Save chart data", "save.svg",
-                                "Export the selected index series as CSV")
-    row.addWidget(_toolbar_label("Index:"))
+    dialog.navegador_3 = _button(_tr("Open in browser"), "browser.svg",
+                                 _tr("Open this chart full-screen in your web browser"))
+    dialog.save_plot3 = _button(_tr("Save chart data"), "save.svg",
+                                _tr("Export the selected index series as CSV"))
+    row.addWidget(_toolbar_label(_tr("Index:")))
     row.addWidget(dialog.atributo_2, 1)
     row.addWidget(dialog.navegador_3)
     row.addWidget(dialog.save_plot3)
