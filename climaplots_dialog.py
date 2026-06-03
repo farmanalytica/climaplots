@@ -38,7 +38,13 @@ import webbrowser
 
 from .modules import map_tools, save_utils
 from .modules.canvas_click_tool import CanvasClickTool
-from .services import export_service, plot_service, settings_manager
+from .services import (
+    export_service,
+    nasa_power_service,
+    openmeteo_service,
+    plot_service,
+    settings_manager,
+)
 from .view import Sidebar, pages, plotly_view
 from .view.styles import STYLE_BTN_HELP, STYLE_BTN_SUBTLE, STYLE_DIALOG
 from .workers import AnalysisWorker
@@ -241,6 +247,10 @@ class ClimaPlotsDialog(QDialog):
         self.googlemaps.clicked.connect(map_tools.hybrid_function)
         self.proxy.clicked.connect(self.open_proxy_dialog)
         self.clear_mark.clicked.connect(self._clear_marker)
+        self.copy_a_to_b.clicked.connect(self._copy_a_to_b)
+        self.source_combo.currentIndexChanged.connect(self._sync_year_range)
+        self.source_combo_b.currentIndexChanged.connect(self._sync_year_range)
+        self._sync_year_range()
         self.save_img.clicked.connect(lambda: self._save_png(1))
         self.save_img2.clicked.connect(lambda: self._save_png(2))
         self.save_img3.clicked.connect(lambda: self._save_png(3))
@@ -349,6 +359,32 @@ class ClimaPlotsDialog(QDialog):
         else:
             self.LongEdit.setText(str(longitude))
             self.LatEdit.setText(str(latitude))
+
+    def _copy_a_to_b(self):
+        """Replicate point A's coordinates into the comparison point B fields."""
+        self.LongEditB.setText(self.LongEdit.text().strip())
+        self.LatEditB.setText(self.LatEdit.text().strip())
+
+    _SOURCE_MIN_YEAR = {
+        "power": nasa_power_service.MIN_YEAR,
+        "openmeteo": openmeteo_service.MIN_YEAR,
+    }
+
+    def _sync_year_range(self):
+        """Lower the year spinboxes' minimum to match the active data sources.
+
+        One year range feeds both fetches, so the floor is the most restrictive
+        of the sources in use (A always; B only when it has its own source).
+        Open-Meteo (ERA5) reaches back to 1940; NASA POWER only to 1981.
+        """
+        source_a = self.source_combo.currentData() or "power"
+        mins = [self._SOURCE_MIN_YEAR.get(source_a, nasa_power_service.MIN_YEAR)]
+        source_b = self.source_combo_b.currentData()
+        if source_b is not None:
+            mins.append(self._SOURCE_MIN_YEAR.get(source_b, nasa_power_service.MIN_YEAR))
+        floor = max(mins)
+        for spin in (self.start_year, self.end_year):
+            spin.setMinimum(floor)
 
     # -------------------------------------------------------------- data flow
     def request_api(self):

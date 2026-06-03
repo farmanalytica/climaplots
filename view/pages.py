@@ -314,6 +314,15 @@ def setup_coordinates_page(dialog, page):
     dialog.pick_point_b.setToolTip(_tr("Leave empty for a single-point analysis"))
     grid_b.addWidget(dialog.pick_point_b, 2, 0, 1, 2)
 
+    # Replicate point A into B, so the same location can be compared across
+    # sources without re-clicking the map.
+    dialog.copy_a_to_b = QPushButton(_tr("⧉  Same location as A"))
+    dialog.copy_a_to_b.setCursor(Qt.CursorShape.PointingHandCursor)
+    dialog.copy_a_to_b.setMinimumHeight(32)
+    dialog.copy_a_to_b.setToolTip(
+        _tr("Copy point A's coordinates here (e.g. to compare data sources)"))
+    grid_b.addWidget(dialog.copy_a_to_b, 3, 0, 1, 2)
+
     # B may use its own source, so the same point can be compared across sources.
     dialog.source_combo_b = QComboBox()
     dialog.source_combo_b.addItem(_tr("(same source as A)"), None)
@@ -324,7 +333,7 @@ def setup_coordinates_page(dialog, page):
     src_b.setSpacing(6)
     src_b.addWidget(QLabel(_tr("Source")))
     src_b.addWidget(dialog.source_combo_b, 1)
-    grid_b.addLayout(src_b, 3, 0, 1, 2)
+    grid_b.addLayout(src_b, 4, 0, 1, 2)
     layout.addWidget(group_b)
 
     aux = QHBoxLayout()

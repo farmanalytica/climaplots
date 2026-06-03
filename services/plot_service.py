@@ -90,11 +90,16 @@ def annual_trends(df, atributo, longitude, latitude,
         fig.add_trace(go.Scatter(
             x=df_year["Date"], y=df_year[atributo], mode="lines+markers",
             name=_series_label("A", longitude, latitude, source)))
+        title = f"<b>A:</b> {title}"
         df_year_b = _aggregate_annual(df_b)
         if atributo in df_year_b.columns:
             fig.add_trace(go.Scatter(
                 x=df_year_b["Date"], y=df_year_b[atributo], mode="lines+markers",
                 name=_series_label("B", longitude_b, latitude_b, source_b)))
+            df_plot_b = df_year_b[["Date", atributo]].copy()
+            df_plot_b.index = df_plot_b["Date"]
+            title_b = stats_service.stats_title(df_plot_b[[atributo]].astype(float))
+            title = f"{title}<br><b>B:</b> {title_b}"
         fig.update_layout(title=f"<b>{atributo}</b><br>{title}", showlegend=True)
     else:
         fig = px.line(
