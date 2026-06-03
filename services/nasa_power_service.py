@@ -7,11 +7,25 @@ point and returns a tidy pandas DataFrame. Two agronomic variables are derived
 locally: reference evapotranspiration ET0 (Hargreaves) and growing degree days.
 """
 import datetime
+import hashlib
 import json
+import os
+import tempfile
 
 import numpy as np
 import pandas as pd
 import requests
+
+# Fetched series are cached on disk so re-runs (and offline replots) are
+# instant. NASA POWER historical data does not change, so the cache never
+# needs invalidating; delete the folder to clear it.
+_CACHE_DIR = os.path.join(tempfile.gettempdir(), "climaplots_cache")
+
+
+def _cache_path(longitude, latitude, start_year, end_year):
+    key = f"{float(longitude):.4f}|{float(latitude):.4f}|{start_year}|{end_year}"
+    digest = hashlib.md5(key.encode("utf-8")).hexdigest()  # noqa: S324 - cache key only
+    return os.path.join(_CACHE_DIR, digest + ".pkl")
 
 # Daily point-API parameters (incl. WS2M wind speed at 2 m).
 _BASE_URL = (
@@ -43,7 +57,7 @@ def last_complete_year():
     return datetime.date.today().year - 1
 
 
-def fetch(longitude, latitude, proxy="", start_year=MIN_YEAR, end_year=None):
+def fetch(longitude, latitude, proxy="", start_year=MIN_YEAR, end_year=None, use_cache=True):
     """Fetch daily climate data for a coordinate and a year range.
 
     Args:
@@ -60,6 +74,13 @@ def fetch(longitude, latitude, proxy="", start_year=MIN_YEAR, end_year=None):
         end_year = last_complete_year()
     start_year = max(int(start_year), MIN_YEAR)
     end_year = max(int(end_year), start_year)
+
+    cache_path = _cache_path(longitude, latitude, start_year, end_year)
+    if use_cache and os.path.isfile(cache_path):
+        try:
+            return pd.read_pickle(cache_path)
+        except Exception:
+            pass  # corrupt cache -> refetch
 
     url = _BASE_URL.format(
         longitude=float(longitude), latitude=float(latitude),
@@ -81,6 +102,14 @@ def fetch(longitude, latitude, proxy="", start_year=MIN_YEAR, end_year=None):
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
     _add_derived(df, float(latitude))
+
+    if use_cache:
+        try:
+            os.makedirs(_CACHE_DIR, exist_ok=True)
+            df.to_pickle(cache_path)
+        except Exception:
+            pass  # caching is best-effort
+
     return df
 
 
