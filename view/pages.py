@@ -9,9 +9,9 @@ of the sibling plugins (terra_valora, qgis-EasyDEM).
 """
 import os
 
-from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QIcon, QPixmap
-from qgis.PyQt.QtWebKitWidgets import QWebView
+from qgis.PyQt.QtCore import Qt, QUrl
+from qgis.PyQt.QtGui import QDesktopServices, QIcon, QPixmap
+from qgis.PyQt.QtWebKitWidgets import QWebPage, QWebView
 from qgis.PyQt.QtWidgets import (
     QComboBox,
     QGridLayout,
@@ -54,15 +54,6 @@ _INDICES = [
 PICK_TEXT_OFF = "📍  Pick point on map"
 PICK_TEXT_ON = "📍  Click on the map…  (capturing)"
 
-_INTRO_TEXT = (
-    "ClimaPlots fetches 40+ years of daily climate data from NASA POWER for any "
-    "point on the map and builds interactive visualizations: annual trends with "
-    "Mann-Kendall / Pettitt tests, a thermo-pluviometric diagram, and ETCCDI "
-    "climate indices. Click a point on the canvas, run the analysis, and explore "
-    "the charts."
-)
-
-
 def _icon(name):
     path = os.path.join(_MEDIAS, name)
     return QIcon(path) if os.path.exists(path) else QIcon()
@@ -82,35 +73,18 @@ def setup_intro_page(dialog, page):
     page.setStyleSheet("QWidget#pageIntro { background-color: #f5f7fa; }")
 
     outer = QVBoxLayout(page)
-    outer.setContentsMargins(48, 28, 48, 20)
-    outer.addStretch(1)
+    outer.setContentsMargins(0, 0, 0, 0)
+    outer.setSpacing(0)
 
-    title = QLabel("ClimaPlots")
-    title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    title.setStyleSheet("color: #1c3d5a; font-size: 26px; font-weight: bold; background: transparent;")
-    outer.addWidget(title)
-
-    subtitle = QLabel("Climate analysis from NASA POWER")
-    subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    subtitle.setStyleSheet("color: #2c6cab; font-size: 13px; background: transparent;")
-    outer.addWidget(subtitle)
-
-    outer.addSpacing(18)
-
-    desc = QLabel(_INTRO_TEXT)
-    desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    desc.setWordWrap(True)
-    desc.setStyleSheet("color: #5b6b7b; font-size: 13px; background: transparent;")
-    desc.setMaximumWidth(560)
-    desc_row = QHBoxLayout()
-    desc_row.addStretch(1)
-    desc_row.addWidget(desc)
-    desc_row.addStretch(1)
-    outer.addLayout(desc_row)
-
-    outer.addSpacing(26)
+    # Explainer / usage guide / citation rendered from assets/intro.html.
+    view = _make_webview()
+    view.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
+    view.linkClicked.connect(QDesktopServices.openUrl)  # open DOI etc. externally
+    view.load(QUrl.fromLocalFile(os.path.join(_ASSETS, "intro.html")))
+    outer.addWidget(view, 1)
 
     btn_row = QHBoxLayout()
+    btn_row.setContentsMargins(0, 10, 0, 8)
     btn_row.addStretch(1)
     start_btn = QPushButton("Get Started")
     start_btn.setStyleSheet(STYLE_BTN_PRIMARY)
@@ -122,7 +96,6 @@ def setup_intro_page(dialog, page):
     btn_row.addStretch(1)
     outer.addLayout(btn_row)
 
-    outer.addStretch(2)
     outer.addWidget(_build_sponsor())
 
     dialog.intro_start_btn = start_btn
