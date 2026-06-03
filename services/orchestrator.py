@@ -10,18 +10,23 @@ from . import indices_service, nasa_power_service
 from .types import ClimateData
 
 
-def run_analysis(longitude, latitude, proxy="", warn=None):
+def run_analysis(longitude, latitude, proxy="", warn=None, start_year=None, end_year=None):
     """Fetch climate data and compute indices for a coordinate.
 
     Args:
         longitude / latitude: queried point.
         proxy: optional proxy URL.
         warn: optional callable(str) for per-index failure messages.
+        start_year / end_year: inclusive year range (None -> service defaults).
 
     Returns:
         ClimateData with the raw dataframe and the computed indices.
     """
-    df = nasa_power_service.fetch(longitude, latitude, proxy)
+    df = nasa_power_service.fetch(
+        longitude, latitude, proxy,
+        start_year=start_year or nasa_power_service.MIN_YEAR,
+        end_year=end_year,
+    )
     indices = indices_service.compute(df, warn=warn or (lambda _m: None))
     return ClimateData(
         df=df, indices=indices, longitude=str(longitude), latitude=str(latitude)

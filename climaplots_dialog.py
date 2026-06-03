@@ -55,7 +55,7 @@ _PAGE_TITLES = {
 # canvas remains visible while picking a point; plot pages open wide.
 _PAGE_SIZES = {
     "intro": (820, 560),
-    "coords": (430, 270),
+    "coords": (440, 300),
     "trends": (1020, 620),
     "thermo": (1020, 620),
     "indices": (1020, 620),
@@ -300,7 +300,8 @@ class ClimaPlotsDialog(QDialog):
                 pass
 
         self._worker = AnalysisWorker(
-            self.LongEdit.text(), self.LatEdit.text(), settings_manager.get_proxy(), self
+            self.LongEdit.text(), self.LatEdit.text(), settings_manager.get_proxy(),
+            start_year=self.start_year.value(), end_year=self.end_year.value(), parent=self,
         )
         self._worker.finished_ok.connect(self._on_analysis_done)
         self._worker.failed.connect(self._on_analysis_failed)

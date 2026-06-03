@@ -21,12 +21,22 @@ class PlotDataError(Exception):
     """Raised when the requested variable/index cannot be plotted."""
 
 
+# Variables aggregated as an annual TOTAL (sum); everything else is a mean.
+_SUM_VARS = {"Precipitation", "Reference ET0", "Growing Degree Days"}
+_ALL_VARS = [
+    "Max Temperature", "Min Temperature", "Precipitation", "Relative Humidity",
+    "Irradiation", "Wind Speed", "Reference ET0", "Growing Degree Days",
+]
+
 _YAXIS_TITLES = {
     "Precipitation": "Precipitation (mm) - Annual Total",
     "Min Temperature": "Min Temperature (ºC) - Annual Mean",
     "Max Temperature": "Max Temperature (ºC) - Annual Mean",
     "Irradiation": "Irradiation (kWh/m²/day) - Annual Mean",
     "Relative Humidity": "Relative Humidity (%) - Annual Mean",
+    "Wind Speed": "Wind Speed (m/s) - Annual Mean",
+    "Reference ET0": "Reference ET₀ (mm) - Annual Total",
+    "Growing Degree Days": "Growing Degree Days (°C·day, base 10) - Annual Total",
 }
 
 
@@ -34,40 +44,36 @@ def annual_trends(df, atributo, longitude, latitude):
     """Annual trend line for one variable, titled with MK + Pettitt results."""
     df = df.copy()
     df["Year"] = df["Date"].dt.year
-    df_aux = df.groupby("Year")[["Precipitation"]].sum()
+    present = [c for c in _ALL_VARS if c in df.columns]
+    sum_cols = [c for c in present if c in _SUM_VARS]
+    mean_cols = [c for c in present if c not in _SUM_VARS]
 
-    mean_candidates = ["Min Temperature", "Max Temperature", "Relative Humidity", "Irradiation"]
-    mean_cols = [c for c in mean_candidates if c in df.columns]
+    frames = []
+    if sum_cols:
+        frames.append(df.groupby("Year")[sum_cols].sum())
     if mean_cols:
-        df_mean = df.groupby("Year").mean()[mean_cols]
-    else:
-        df_mean = pd.DataFrame(index=df_aux.index)
+        frames.append(df.groupby("Year")[mean_cols].mean())
+    df_year = pd.concat(frames, axis=1).reset_index()
+    df_year["Date"] = pd.to_datetime(df_year["Year"].astype(str) + "-01-01")
 
-    df_mean["Precipitation"] = df_aux["Precipitation"]
-    df_mean.reset_index(inplace=True)
-    df_mean["Date"] = pd.to_datetime(df_mean["Year"].astype(str) + "-01-01")
-
-    if atributo not in df_mean.columns:
+    if atributo not in df_year.columns:
         raise PlotDataError(
             f"Attribute '{atributo}' is not available for the selected location."
         )
 
-    df_plot = df_mean[["Date", atributo]].copy()
+    df_plot = df_year[["Date", atributo]].copy()
     df_plot.index = df_plot["Date"]
     df_plot = df_plot[[atributo]].astype(float)
 
     title = stats_service.stats_title(df_plot)
     fig = px.line(
-        df_mean, x="Date", y=[atributo],
+        df_year, x="Date", y=[atributo],
         title=f"<b>{atributo}</b> (Long: {longitude} Lat: {latitude}) <br>{title}",
     )
     fig.update_layout(showlegend=False)
     if atributo in _YAXIS_TITLES:
         fig.update_yaxes(title_text=_YAXIS_TITLES[atributo])
-
-    if "Year" not in df_mean.columns:
-        df_mean["Year"] = pd.to_datetime(df_mean["Date"]).dt.year
-    return PlotResult(figure=fig, data=df_mean)
+    return PlotResult(figure=fig, data=df_year)
 
 
 def thermopluviometric(df, longitude, latitude):

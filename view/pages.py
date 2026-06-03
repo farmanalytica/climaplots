@@ -7,6 +7,7 @@ interactive widgets onto ``dialog`` under the names the handlers expect
 climaplots_dialog.py stays UI-agnostic. Mirrors the ``setup_*_page`` convention
 of the sibling plugins (terra_valora, qgis-EasyDEM).
 """
+import datetime
 import os
 
 from qgis.PyQt.QtCore import Qt, QUrl, QSize
@@ -21,9 +22,13 @@ from qgis.PyQt.QtWidgets import (
     QLineEdit,
     QPushButton,
     QSizePolicy,
+    QSpinBox,
     QVBoxLayout,
     QWidget,
 )
+
+_MIN_YEAR = 1981
+_MAX_YEAR = datetime.date.today().year - 1
 
 from .styles import STYLE_BTN, STYLE_BTN_PRIMARY, STYLE_PICK_TOGGLE
 
@@ -33,7 +38,8 @@ _ASSETS = os.path.join(_PLUGIN_DIR, "assets")
 
 _VARIABLES = [
     "Max Temperature", "Min Temperature", "Precipitation",
-    "Relative Humidity", "Irradiation",
+    "Relative Humidity", "Irradiation", "Wind Speed",
+    "Reference ET0", "Growing Degree Days",
 ]
 _INDICES = [
     "Annual Summer Days", "Annual Frost Days", "Annual Tropical Nights",
@@ -210,6 +216,24 @@ def setup_coordinates_page(dialog, page):
     dialog.pick_point.setMinimumHeight(32)
     dialog.pick_point.setToolTip("Capture a coordinate by clicking on the map canvas")
     grid.addWidget(dialog.pick_point, 2, 0, 1, 2)
+
+    # Year range (NASA POWER daily data starts in 1981).
+    dialog.start_year = QSpinBox()
+    dialog.start_year.setRange(_MIN_YEAR, _MAX_YEAR)
+    dialog.start_year.setValue(_MIN_YEAR)
+    dialog.start_year.setToolTip("First year to download")
+    dialog.end_year = QSpinBox()
+    dialog.end_year.setRange(_MIN_YEAR, _MAX_YEAR)
+    dialog.end_year.setValue(_MAX_YEAR)
+    dialog.end_year.setToolTip("Last year to download")
+    years = QHBoxLayout()
+    years.setSpacing(6)
+    years.addWidget(QLabel("Years"))
+    years.addWidget(dialog.start_year)
+    years.addWidget(QLabel("to"))
+    years.addWidget(dialog.end_year)
+    years.addStretch(1)
+    grid.addLayout(years, 3, 0, 1, 2)
     layout.addWidget(group)
 
     dialog.googlemaps = _button(

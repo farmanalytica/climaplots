@@ -21,11 +21,13 @@ class AnalysisWorker(QThread):
     failed = pyqtSignal(str)           # error message
     progress = pyqtSignal(str)         # human-readable status / per-index warning
 
-    def __init__(self, longitude, latitude, proxy="", parent=None):
+    def __init__(self, longitude, latitude, proxy="", start_year=None, end_year=None, parent=None):
         super().__init__(parent)
         self._longitude = longitude
         self._latitude = latitude
         self._proxy = proxy
+        self._start_year = start_year
+        self._end_year = end_year
 
     def run(self):
         try:
@@ -33,6 +35,7 @@ class AnalysisWorker(QThread):
             data = orchestrator.run_analysis(
                 self._longitude, self._latitude, self._proxy,
                 warn=lambda msg: self.progress.emit(msg),
+                start_year=self._start_year, end_year=self._end_year,
             )
             self.finished_ok.emit(data)
         except Exception:  # noqa: BLE001 - surface any failure to the UI
