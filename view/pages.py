@@ -149,12 +149,13 @@ def _build_sponsor():
 # ----------------------------------------------------------------- coordinates
 def setup_coordinates_page(dialog, page):
     layout = QVBoxLayout(page)
-    layout.setContentsMargins(16, 14, 16, 14)
-    layout.setSpacing(8)
+    layout.setContentsMargins(14, 10, 14, 10)
+    layout.setSpacing(6)
 
     group = QGroupBox("Location")
     grid = QGridLayout(group)
-    grid.setVerticalSpacing(4)
+    grid.setVerticalSpacing(3)
+    grid.setContentsMargins(10, 6, 10, 8)
     dialog.LongEdit = QLineEdit()
     dialog.LongEdit.setPlaceholderText("e.g. -47.06")
     dialog.LongEdit.setToolTip("Longitude in decimal degrees (WGS84)")
@@ -173,23 +174,20 @@ def setup_coordinates_page(dialog, page):
     grid.addWidget(dialog.pick_point, 2, 0, 1, 2)
     layout.addWidget(group)
 
-    hint = QLabel("Pick a point on the map or type its coordinates, then run the analysis.")
-    hint.setWordWrap(True)
-    hint.setStyleSheet("color: #8a98a6; font-size: 11px; background: transparent;")
-    layout.addWidget(hint)
-
-    dialog.googlemaps = QPushButton(_icon("download.svg"), "Add Google satellite layer")
+    # Google-layer + Run on a single row to keep the page short.
+    row = QHBoxLayout()
+    dialog.googlemaps = QPushButton(_icon("download.svg"), "Satellite layer")
     dialog.googlemaps.setStyleSheet(STYLE_BTN)
     dialog.googlemaps.setCursor(Qt.CursorShape.PointingHandCursor)
     dialog.googlemaps.setToolTip("Add a Google satellite basemap to help locate your point")
-    layout.addWidget(dialog.googlemaps)
-
     dialog.gerar_req = QPushButton(_icon("icons8-reproduzir-50.png"), "Run analysis")
     dialog.gerar_req.setStyleSheet(STYLE_BTN_PRIMARY)
     dialog.gerar_req.setCursor(Qt.CursorShape.PointingHandCursor)
     dialog.gerar_req.setToolTip("Download NASA POWER data for this point and build the charts")
-    dialog.gerar_req.setFixedHeight(36)
-    layout.addWidget(dialog.gerar_req)
+    dialog.gerar_req.setFixedHeight(34)
+    row.addWidget(dialog.googlemaps)
+    row.addWidget(dialog.gerar_req, 1)
+    layout.addLayout(row)
     layout.addStretch(1)
 
 
