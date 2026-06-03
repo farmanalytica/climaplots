@@ -33,28 +33,39 @@
 </head>
 <body>
   <h1>ClimaPlots</h1>
-  <p class="sub">Climate analysis from NASA POWER, inside QGIS.</p>
+  <p class="sub">Climate analysis from NASA POWER and Open-Meteo (ERA5), inside QGIS.</p>
 
   <p>
-    ClimaPlots fetches more than 40 years of daily climate data from the
-    <b>NASA POWER</b> database for any point on the map and turns it into
-    interactive charts &mdash; no coding required.
+    ClimaPlots fetches decades of daily climate data for any point on the map
+    and turns it into interactive charts &mdash; no coding required. Choose
+    between two data sources: <b>NASA POWER</b> (from 1981) and
+    <b>Open-Meteo (ERA5)</b> (from 1940).
   </p>
 
   <h2>What it produces</h2>
-  <p><b>Annual trends</b> for temperature, precipitation, relative humidity and
-     irradiation, each annotated with <b>Mann&ndash;Kendall</b> trend and
-     <b>Pettitt</b> homogeneity tests.</p>
+  <p><b>Annual trends</b> for temperature, precipitation, relative humidity,
+     irradiation, wind speed, reference ET&#8320; and growing degree days, each
+     annotated with <b>Mann&ndash;Kendall</b> trend and <b>Pettitt</b>
+     homogeneity tests.</p>
   <p><b>Thermo-pluviometric diagram</b> &mdash; the mean monthly precipitation
      and temperature regime of the location.</p>
   <p><b>Climate indices</b> &mdash; ETCCDI temperature and precipitation indices
      plus the Standardized Precipitation Index (SPI).</p>
 
+  <h2>Compare two locations or two sources</h2>
+  <p>Add an optional <b>comparison point B</b> to overlay a second series on the
+     Trends chart, with trend statistics reported for both points. B can use its
+     own data source, so the <i>same</i> location can be compared across NASA
+     POWER and Open-Meteo &mdash; use <b>Same location as A</b> to copy point A's
+     coordinates without re-clicking the map.</p>
+
   <h2>Quick start</h2>
   <ol>
-    <li>Open the <b>Coordinates</b> page.</li>
+    <li>Open the <b>Coordinates</b> page and pick a <b>data source</b>.</li>
     <li>Click <b>Pick point on map</b> and click a location on the canvas
         (or type the longitude/latitude manually).</li>
+    <li>Optionally set a <b>comparison point B</b> &mdash; pick it on the map,
+        or press <b>Same location as A</b>.</li>
     <li>Press <b>Run Analysis</b> and wait while the data is downloaded.</li>
     <li>Browse the <b>Trends</b>, <b>Thermo-pluviometric</b> and
         <b>Indices</b> pages. Use <b>Open in the browser</b> for a full-screen
