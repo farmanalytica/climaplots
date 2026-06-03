@@ -10,7 +10,7 @@ qgisMinimumVersion=3.0
 description=Fetch 40+ years of daily climate data from NASA POWER or Open-Meteo (ERA5) for any point and build interactive charts in QGIS: annual trends with Mann-Kendall/Pettitt tests, a thermo-pluviometric diagram, ETCCDI indices and SPI, plus reference ET0, growing degree days and wind.
 version=2.0
 author=Caio Arantes
-email=caiosimplicioarantes@gmail.com
+email=caio.arantes@farmanalytica.com.br
 
 about=ClimaPlots brings point-based climate analysis into QGIS with no coding. Click a location (or type coordinates), choose a year range and a data source (NASA POWER or Open-Meteo/ERA5), and the plugin downloads the daily series and builds interactive plotly charts: annual trends annotated with the Mann-Kendall trend and Pettitt homogeneity tests, a thermo-pluviometric diagram, the full set of ETCCDI temperature/precipitation indices and the Standardized Precipitation Index (SPI), plus reference evapotranspiration (ET0), growing degree days and wind. Compare two locations (or the same point across sources), export charts as PNG and all tables as an Excel report, in a multi-language interface (EN/PT/ES/FR/IT/HI/ZH). Scientific dependencies are downloaded automatically on first run.
 
