@@ -55,7 +55,7 @@ _PAGE_TITLES = {
 # canvas remains visible while picking a point; plot pages open wide.
 _PAGE_SIZES = {
     "intro": (820, 560),
-    "coords": (430, 230),
+    "coords": (430, 270),
     "trends": (1020, 620),
     "thermo": (1020, 620),
     "indices": (1020, 620),

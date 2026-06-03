@@ -212,20 +212,19 @@ def setup_coordinates_page(dialog, page):
     grid.addWidget(dialog.pick_point, 2, 0, 1, 2)
     layout.addWidget(group)
 
-    # Satellite-layer + Run on a single row to keep the page short.
-    row = QHBoxLayout()
-    row.setSpacing(6)
     dialog.googlemaps = _button(
         "Satellite layer", "satellite.svg",
         "Add a Google satellite basemap to help locate your point", height=34)
+    layout.addWidget(dialog.googlemaps)
+
+    layout.addStretch(1)
+
+    # Run analysis anchored at the bottom of the page (full width).
     dialog.gerar_req = _button(
         "Run analysis", "run.svg",
         "Download NASA POWER data for this point and build the charts",
-        style=STYLE_BTN_PRIMARY, height=34)
-    row.addWidget(dialog.googlemaps)
-    row.addWidget(dialog.gerar_req, 1)
-    layout.addLayout(row)
-    layout.addStretch(1)
+        style=STYLE_BTN_PRIMARY, height=38)
+    layout.addWidget(dialog.gerar_req)
 
 
 # -------------------------------------------------------------------- plots
