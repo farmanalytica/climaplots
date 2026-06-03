@@ -229,7 +229,6 @@ class ClimaPlotsDialog(QDialog):
         self.atributo_2.currentTextChanged.connect(self.plots3)
         self.googlemaps.clicked.connect(map_tools.hybrid_function)
         self.proxy.clicked.connect(self.open_proxy_dialog)
-        self.learn.clicked.connect(self.open_learn_dialog)
 
         if self.click_tool is not None:
             self.pick_point.toggled.connect(self._toggle_pick)

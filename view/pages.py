@@ -51,8 +51,8 @@ _INDICES = [
 ]
 
 # Labels for the checkable "pick point" toggle (idle / capturing).
-PICK_TEXT_OFF = "📍  Pick point on map"
-PICK_TEXT_ON = "📍  Click on the map…  (capturing)"
+PICK_TEXT_OFF = "📍  Pick a point on the map"
+PICK_TEXT_ON = "📍  Click the map…  (click here to cancel)"
 
 def _icon(name):
     path = os.path.join(_MEDIAS, name)
@@ -150,34 +150,46 @@ def _build_sponsor():
 def setup_coordinates_page(dialog, page):
     layout = QVBoxLayout(page)
     layout.setContentsMargins(16, 14, 16, 14)
+    layout.setSpacing(8)
 
-    group = QGroupBox("Select coordinate (click on canvas or type it)")
+    group = QGroupBox("Location")
     grid = QGridLayout(group)
+    grid.setVerticalSpacing(4)
     dialog.LongEdit = QLineEdit()
+    dialog.LongEdit.setPlaceholderText("e.g. -47.06")
+    dialog.LongEdit.setToolTip("Longitude in decimal degrees (WGS84)")
     dialog.LatEdit = QLineEdit()
-    grid.addWidget(QLabel("Longitude:"), 0, 0)
-    grid.addWidget(QLabel("Latitude:"), 0, 1)
+    dialog.LatEdit.setPlaceholderText("e.g. -22.90")
+    dialog.LatEdit.setToolTip("Latitude in decimal degrees (WGS84)")
+    grid.addWidget(QLabel("Longitude"), 0, 0)
+    grid.addWidget(QLabel("Latitude"), 0, 1)
     grid.addWidget(dialog.LongEdit, 1, 0)
     grid.addWidget(dialog.LatEdit, 1, 1)
     dialog.pick_point = QPushButton(PICK_TEXT_OFF)
     dialog.pick_point.setCheckable(True)
     dialog.pick_point.setStyleSheet(STYLE_PICK_TOGGLE)
     dialog.pick_point.setCursor(Qt.CursorShape.PointingHandCursor)
+    dialog.pick_point.setToolTip("Capture a coordinate by clicking on the map canvas")
     grid.addWidget(dialog.pick_point, 2, 0, 1, 2)
     layout.addWidget(group)
 
-    dialog.learn = QPushButton(_icon("open-in-browser.svg"), "Learn more about this plugin")
-    dialog.learn.setStyleSheet(STYLE_BTN)
-    layout.addWidget(dialog.learn)
+    hint = QLabel("Pick a point on the map or type its coordinates, then run the analysis.")
+    hint.setWordWrap(True)
+    hint.setStyleSheet("color: #8a98a6; font-size: 11px; background: transparent;")
+    layout.addWidget(hint)
 
-    row = QHBoxLayout()
-    dialog.googlemaps = QPushButton("Load Google Maps Layer")
+    dialog.googlemaps = QPushButton(_icon("download.svg"), "Add Google satellite layer")
     dialog.googlemaps.setStyleSheet(STYLE_BTN)
-    dialog.gerar_req = QPushButton(_icon("icons8-reproduzir-50.png"), "Run Analysis")
+    dialog.googlemaps.setCursor(Qt.CursorShape.PointingHandCursor)
+    dialog.googlemaps.setToolTip("Add a Google satellite basemap to help locate your point")
+    layout.addWidget(dialog.googlemaps)
+
+    dialog.gerar_req = QPushButton(_icon("icons8-reproduzir-50.png"), "Run analysis")
     dialog.gerar_req.setStyleSheet(STYLE_BTN_PRIMARY)
-    row.addWidget(dialog.googlemaps)
-    row.addWidget(dialog.gerar_req)
-    layout.addLayout(row)
+    dialog.gerar_req.setCursor(Qt.CursorShape.PointingHandCursor)
+    dialog.gerar_req.setToolTip("Download NASA POWER data for this point and build the charts")
+    dialog.gerar_req.setFixedHeight(36)
+    layout.addWidget(dialog.gerar_req)
     layout.addStretch(1)
 
 
@@ -193,15 +205,27 @@ def _plot_page(dialog, page):
     return row, web
 
 
+def _toolbar_label(text):
+    lbl = QLabel(text)
+    lbl.setStyleSheet("color: #5b6b7b; font-size: 12px; background: transparent;")
+    return lbl
+
+
 def setup_trends_page(dialog, page):
     row, web = _plot_page(dialog, page)
     dialog.atributo = QComboBox()
     dialog.atributo.addItems(_VARIABLES)
-    dialog.save_raw = QPushButton(_icon("diskette.png"), "Save raw data")
-    dialog.navegador = QPushButton(_icon("open-in-browser.svg"), "Open in the browser")
-    dialog.save_plot = QPushButton(_icon("diskette.png"), "Save data")
+    dialog.atributo.setToolTip("Choose the climate variable to plot")
+    dialog.save_raw = QPushButton(_icon("diskette.png"), "Save daily data")
+    dialog.save_raw.setToolTip("Export the full daily NASA POWER series as CSV")
+    dialog.navegador = QPushButton(_icon("open-in-browser.svg"), "Open in browser")
+    dialog.navegador.setToolTip("Open this chart full-screen in your web browser")
+    dialog.save_plot = QPushButton(_icon("diskette.png"), "Save chart data")
+    dialog.save_plot.setToolTip("Export the plotted annual series as CSV")
     for b in (dialog.save_raw, dialog.navegador, dialog.save_plot):
         b.setStyleSheet(STYLE_BTN)
+        b.setCursor(Qt.CursorShape.PointingHandCursor)
+    row.addWidget(_toolbar_label("Variable:"))
     row.addWidget(dialog.atributo)
     row.addStretch(1)
     row.addWidget(dialog.save_raw)
@@ -212,10 +236,14 @@ def setup_trends_page(dialog, page):
 
 def setup_thermo_page(dialog, page):
     row, web = _plot_page(dialog, page)
-    dialog.navegador_2 = QPushButton(_icon("open-in-browser.svg"), "Open in the browser")
-    dialog.save_plot2 = QPushButton(_icon("diskette.png"), "Save data")
+    dialog.navegador_2 = QPushButton(_icon("open-in-browser.svg"), "Open in browser")
+    dialog.navegador_2.setToolTip("Open this chart full-screen in your web browser")
+    dialog.save_plot2 = QPushButton(_icon("diskette.png"), "Save chart data")
+    dialog.save_plot2.setToolTip("Export the monthly climate normals as CSV")
     for b in (dialog.navegador_2, dialog.save_plot2):
         b.setStyleSheet(STYLE_BTN)
+        b.setCursor(Qt.CursorShape.PointingHandCursor)
+    row.addWidget(_toolbar_label("Mean monthly precipitation and temperature"))
     row.addStretch(1)
     row.addWidget(dialog.navegador_2)
     row.addWidget(dialog.save_plot2)
@@ -227,10 +255,15 @@ def setup_indices_page(dialog, page):
     dialog.atributo_2 = QComboBox()
     dialog.atributo_2.addItems(_INDICES)
     dialog.atributo_2.setCurrentIndex(0)
-    dialog.navegador_3 = QPushButton(_icon("open-in-browser.svg"), "Open in the browser")
-    dialog.save_plot3 = QPushButton(_icon("diskette.png"), "Save data")
+    dialog.atributo_2.setToolTip("Choose the ETCCDI climate index to plot")
+    dialog.navegador_3 = QPushButton(_icon("open-in-browser.svg"), "Open in browser")
+    dialog.navegador_3.setToolTip("Open this chart full-screen in your web browser")
+    dialog.save_plot3 = QPushButton(_icon("diskette.png"), "Save chart data")
+    dialog.save_plot3.setToolTip("Export the selected index series as CSV")
     for b in (dialog.navegador_3, dialog.save_plot3):
         b.setStyleSheet(STYLE_BTN)
+        b.setCursor(Qt.CursorShape.PointingHandCursor)
+    row.addWidget(_toolbar_label("Index:"))
     row.addWidget(dialog.atributo_2, 1)
     row.addWidget(dialog.navegador_3)
     row.addWidget(dialog.save_plot3)
