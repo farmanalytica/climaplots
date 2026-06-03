@@ -10,6 +10,9 @@
 # To rebuild extlibs/ from scratch (run with the QGIS Python so compiled libs
 # match QGIS's numpy ABI):
 #   & "C:\QGIS 3.44.10\bin\python-qgis-ltr.bat" -m pip install -r requirements.txt --target extlibs
+# That reinstall pulls the UNPATCHED climdex, so this script re-applies the
+# climdex pandas-3 fix ('1M' -> 'ME') below before zipping. The patch is
+# idempotent, so it is safe to run every time.
 #
 # Usage:  powershell -ExecutionPolicy Bypass -File build_extlibs.ps1
 
@@ -20,6 +23,19 @@ $zip  = Join-Path $root "extlibs.zip"
 
 if (-not (Test-Path $ext)) {
     throw "extlibs/ not found at $ext. Install dependencies first (see header)."
+}
+
+# Patch vendored climdex for pandas 3: the deprecated '1M' offset is rejected by
+# pandas 3.x, so 9 of 17 indices fail silently. Replace it with 'ME'. Idempotent.
+foreach ($name in @("precipitation.py", "temperature.py")) {
+    $f = Join-Path $ext "climdex\$name"
+    if (Test-Path $f) {
+        $c = Get-Content $f -Raw
+        if ($c -match "'1M'") {
+            ($c -replace "'1M'", "'ME'") | Set-Content $f -NoNewline -Encoding utf8
+            Write-Host "Patched climdex\$name ('1M' -> 'ME')"
+        }
+    }
 }
 
 # Drop the old archive
