@@ -25,7 +25,7 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
 )
 
-from .styles import STYLE_BTN, STYLE_BTN_PRIMARY, STYLE_BTN_SUBTLE, STYLE_PICK_TOGGLE
+from .styles import STYLE_BTN, STYLE_BTN_PRIMARY, STYLE_PICK_TOGGLE
 
 _PLUGIN_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _MEDIAS = os.path.join(_PLUGIN_DIR, "medias")
@@ -124,17 +124,6 @@ def setup_intro_page(dialog, page):
 
     outer.addStretch(2)
     outer.addWidget(_build_sponsor())
-
-    # Proxy settings tucked into the bottom-right corner (subtle link style).
-    dialog.proxy = QPushButton(_icon("network-settings-2-16.png"), "Proxy settings")
-    dialog.proxy.setStyleSheet(STYLE_BTN_SUBTLE)
-    dialog.proxy.setCursor(Qt.CursorShape.PointingHandCursor)
-    dialog.proxy.setToolTip("Proxy setting (only if required by your network provider)")
-    corner = QHBoxLayout()
-    corner.setContentsMargins(0, 6, 0, 0)
-    corner.addStretch(1)
-    corner.addWidget(dialog.proxy)
-    outer.addLayout(corner)
 
     dialog.intro_start_btn = start_btn
 

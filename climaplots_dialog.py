@@ -38,7 +38,7 @@ from .modules import map_tools, save_utils
 from .modules.canvas_click_tool import CanvasClickTool
 from .services import plot_service, settings_manager
 from .view import Sidebar, pages, plotly_view
-from .view.styles import STYLE_BTN_HELP, STYLE_DIALOG
+from .view.styles import STYLE_BTN_HELP, STYLE_BTN_SUBTLE, STYLE_DIALOG
 from .workers import AnalysisWorker
 
 # Header page-title shown per page (mirrors AGLgis's dynamic header title).
@@ -177,6 +177,13 @@ class ClimaPlotsDialog(QDialog):
         lay.addWidget(self._header_title)
 
         lay.addStretch()
+
+        # Proxy settings tucked into the top-right corner (subtle link style).
+        self.proxy = QPushButton("Proxy settings")
+        self.proxy.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.proxy.setStyleSheet(STYLE_BTN_SUBTLE)
+        self.proxy.setToolTip("Proxy setting (only if required by your network provider)")
+        lay.addWidget(self.proxy)
 
         help_btn = QPushButton("?")
         help_btn.setFixedSize(28, 28)
