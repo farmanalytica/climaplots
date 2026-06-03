@@ -289,5 +289,13 @@ See the QGIS log for details.</source>
         <source>📍  Click the map for B…  (click here to cancel)</source>
         <translation>📍  B के लिए मानचित्र पर क्लिक करें…  (रद्द करने के लिए यहाँ क्लिक करें)</translation>
     </message>
+    <message>
+        <source>Data source</source>
+        <translation>डेटा स्रोत</translation>
+    </message>
+    <message>
+        <source>Climate data provider</source>
+        <translation>जलवायु डेटा प्रदाता</translation>
+    </message>
 </context>
 </TS>

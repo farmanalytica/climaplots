@@ -457,3 +457,16 @@ _EXTRA_B = {
 }
 for _l, _d in _EXTRA_B.items():
     TRANSLATIONS[_l].update(_d)
+
+
+# --- Appended: data-source strings (Open-Meteo) ------------------------------
+SOURCES += ["Data source", "Climate data provider"]
+for _l, _v in {
+    "pt": ("Fonte de dados", "Provedor de dados climáticos"),
+    "es": ("Fuente de datos", "Proveedor de datos climáticos"),
+    "fr": ("Source de données", "Fournisseur de données climatiques"),
+    "it": ("Fonte dati", "Fornitore di dati climatici"),
+    "hi": ("डेटा स्रोत", "जलवायु डेटा प्रदाता"),
+    "zh": ("数据源", "气候数据提供方"),
+}.items():
+    TRANSLATIONS[_l].update({"Data source": _v[0], "Climate data provider": _v[1]})

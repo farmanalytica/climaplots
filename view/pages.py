@@ -240,6 +240,17 @@ def setup_coordinates_page(dialog, page):
     layout.setContentsMargins(14, 10, 14, 10)
     layout.setSpacing(6)
 
+    # Data source selector (English values are the source keys).
+    src_row = QHBoxLayout()
+    src_row.setSpacing(6)
+    dialog.source_combo = QComboBox()
+    dialog.source_combo.addItem("NASA POWER", "power")
+    dialog.source_combo.addItem("Open-Meteo (ERA5)", "openmeteo")
+    dialog.source_combo.setToolTip(_tr("Climate data provider"))
+    src_row.addWidget(QLabel(_tr("Data source")))
+    src_row.addWidget(dialog.source_combo, 1)
+    layout.addLayout(src_row)
+
     group = QGroupBox(_tr("Location"))
     grid = QGridLayout(group)
     grid.setVerticalSpacing(3)

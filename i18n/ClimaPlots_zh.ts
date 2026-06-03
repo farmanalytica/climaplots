@@ -289,5 +289,13 @@ See the QGIS log for details.</source>
         <source>📍  Click the map for B…  (click here to cancel)</source>
         <translation>📍  点击地图选择 B…（点击此处取消）</translation>
     </message>
+    <message>
+        <source>Data source</source>
+        <translation>数据源</translation>
+    </message>
+    <message>
+        <source>Climate data provider</source>
+        <translation>气候数据提供方</translation>
+    </message>
 </context>
 </TS>

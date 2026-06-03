@@ -7,25 +7,13 @@ point and returns a tidy pandas DataFrame. Two agronomic variables are derived
 locally: reference evapotranspiration ET0 (Hargreaves) and growing degree days.
 """
 import datetime
-import hashlib
 import json
-import os
-import tempfile
 
 import numpy as np
 import pandas as pd
 import requests
 
-# Fetched series are cached on disk so re-runs (and offline replots) are
-# instant. NASA POWER historical data does not change, so the cache never
-# needs invalidating; delete the folder to clear it.
-_CACHE_DIR = os.path.join(tempfile.gettempdir(), "climaplots_cache")
-
-
-def _cache_path(longitude, latitude, start_year, end_year):
-    key = f"{float(longitude):.4f}|{float(latitude):.4f}|{start_year}|{end_year}"
-    digest = hashlib.md5(key.encode("utf-8")).hexdigest()  # noqa: S324 - cache key only
-    return os.path.join(_CACHE_DIR, digest + ".pkl")
+from . import disk_cache
 
 # Daily point-API parameters (incl. WS2M wind speed at 2 m).
 _BASE_URL = (
@@ -75,12 +63,12 @@ def fetch(longitude, latitude, proxy="", start_year=MIN_YEAR, end_year=None, use
     start_year = max(int(start_year), MIN_YEAR)
     end_year = max(int(end_year), start_year)
 
-    cache_path = _cache_path(longitude, latitude, start_year, end_year)
-    if use_cache and os.path.isfile(cache_path):
-        try:
-            return pd.read_pickle(cache_path)
-        except Exception:
-            pass  # corrupt cache -> refetch
+    cache_file = disk_cache.cache_path("power", round(float(longitude), 4),
+                                       round(float(latitude), 4), start_year, end_year)
+    if use_cache:
+        cached = disk_cache.load(cache_file)
+        if cached is not None:
+            return cached
 
     url = _BASE_URL.format(
         longitude=float(longitude), latitude=float(latitude),
@@ -104,11 +92,7 @@ def fetch(longitude, latitude, proxy="", start_year=MIN_YEAR, end_year=None, use
     _add_derived(df, float(latitude))
 
     if use_cache:
-        try:
-            os.makedirs(_CACHE_DIR, exist_ok=True)
-            df.to_pickle(cache_path)
-        except Exception:
-            pass  # caching is best-effort
+        disk_cache.save(cache_file, df)
 
     return df
 

@@ -289,5 +289,13 @@ Consulta il log di QGIS per i dettagli.</translation>
         <source>📍  Click the map for B…  (click here to cancel)</source>
         <translation>📍  Clicca sulla mappa per B…  (clicca qui per annullare)</translation>
     </message>
+    <message>
+        <source>Data source</source>
+        <translation>Fonte dati</translation>
+    </message>
+    <message>
+        <source>Climate data provider</source>
+        <translation>Fornitore di dati climatici</translation>
+    </message>
 </context>
 </TS>
