@@ -111,6 +111,7 @@ class ClimaPlotsDialog(QDialog):
         self._figs = {1: None, 2: None, 3: None}      # for "open in browser"
         self._save_data = {1: None, 2: None, 3: None}  # DataFrames for CSV export
         self._tmp_paths = {1: None, 2: None, 3: None}  # temp html per web view
+        self._coords_visited = False        # auto-enable pick on first visit
 
         self._connect_ui_signals()
         self.language = QgsApplication.instance().locale()[:2]
@@ -249,6 +250,12 @@ class ClimaPlotsDialog(QDialog):
         self.proxy.setVisible(page_key == "intro")
         if page_key in _PAGE_SIZES:
             self.resize(*_PAGE_SIZES[page_key])
+        # Auto-enable map-click capture the first time the user opens the
+        # coordinates page, so they can pick a point straight away.
+        if (page_key == "coords" and self.click_tool is not None
+                and not self._coords_visited):
+            self._coords_visited = True
+            self.pick_point.setChecked(True)  # triggers _toggle_pick -> enable
 
     def _on_get_started(self):
         self._goto("coords")
