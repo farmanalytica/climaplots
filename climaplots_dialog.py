@@ -139,6 +139,12 @@ class ClimaPlotsDialog(QDialog):
 
         self.sidebar = Sidebar(self)
         self.stack = QStackedWidget(self)
+        # Opaque background so areas exposed when the window grows on a page
+        # switch (resize in _goto) are erased instead of keeping stale pixels
+        # from the previous page (leftover-artefact bug).
+        self.stack.setObjectName("climaStack")
+        self.stack.setStyleSheet("QStackedWidget#climaStack { background-color: #f5f7fa; }")
+        self.stack.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
         self.intro_page = QWidget()
         self.coords_page = QWidget()

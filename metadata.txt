@@ -14,8 +14,8 @@ email=caio.arantes@farmanalytica.com.br
 
 about=ClimaPlots brings point-based climate analysis into QGIS with no coding. Click a location (or type coordinates), choose a year range and a data source (NASA POWER or Open-Meteo/ERA5), and the plugin downloads the daily series and builds interactive plotly charts: annual trends annotated with the Mann-Kendall trend and Pettitt homogeneity tests, a thermo-pluviometric diagram, the full set of ETCCDI temperature/precipitation indices and the Standardized Precipitation Index (SPI), plus reference evapotranspiration (ET0), growing degree days and wind. Compare two locations (or the same point across sources), export charts as PNG and all tables as an Excel report, in a multi-language interface (EN/PT/ES/FR/IT/HI/ZH). Scientific dependencies are downloaded automatically on first run.
 
-tracker=https://github.com/caioarantes/climaplots/issues
-repository=https://github.com/caioarantes/climaplots
+tracker=https://github.com/farmanalytica/climaplots/issues
+repository=https://github.com/farmanalytica/climaplots
 # End of mandatory metadata
 
 # Recommended items:
@@ -38,7 +38,7 @@ changelog=
 # Tags are comma separated with spaces allowed
 tags=climate,nasa power,open-meteo,era5,weather,precipitation,temperature,evapotranspiration,drought,spi,etccdi,time series,visualization,plotly
 
-homepage=https://caioarantes.github.io/climaplots/
+homepage=https://farmanalytica.github.io/climaplots/
 category=Climate, Visualization
 icon=icon.png
 # experimental flag

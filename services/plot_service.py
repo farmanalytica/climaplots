@@ -100,7 +100,15 @@ def annual_trends(df, atributo, longitude, latitude,
             df_plot_b.index = df_plot_b["Date"]
             title_b = stats_service.stats_title(df_plot_b[[atributo]].astype(float))
             title = f"{title}<br><b>B:</b> {title_b}"
-        fig.update_layout(title=f"<b>{atributo}</b><br>{title}", showlegend=True)
+        # The two-point title runs to ~5 lines; give it room and dock the legend
+        # below the plot so neither overlaps the traces.
+        fig.update_layout(
+            title=dict(text=f"<b>{atributo}</b><br>{title}", font=dict(size=12),
+                       y=0.98, yanchor="top"),
+            margin=dict(t=150),
+            showlegend=True,
+            legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5),
+        )
     else:
         fig = px.line(
             df_year, x="Date", y=[atributo],
