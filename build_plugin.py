@@ -2,9 +2,10 @@
 """Build a distributable ClimaPlots plugin zip.
 
 The plugin ships its heavy scientific dependencies as a runtime download
-(``extlibs.zip`` fetched on first load by ``extlibs_manager.py``), so the
-distribution zip deliberately EXCLUDES the unpacked ``extlibs/`` folder and the
-``extlibs.zip`` artifact, keeping it small.
+(tagged ``extlibs-<cpXY>-<platform>.zip`` bundles fetched on first load by
+``extlibs_manager.py``), so the distribution zip deliberately EXCLUDES the
+unpacked ``extlibs/`` folder and the ``extlibs-*.zip`` artifacts, keeping it
+small.
 
 The file list is taken from git (tracked files) so anything gitignored
 (``extlibs/``, ``__pycache__/``, ``CLAUDE.md``, dev rasters, ...) is excluded
@@ -30,9 +31,8 @@ ZIP_PATH = DIST_DIR / f"{PLUGIN_NAME}.zip"
 
 # Tracked files excluded from the distribution zip (posix paths).
 SKIP_FILES = {
-    "extlibs.zip",        # downloaded at runtime, not bundled
     "build_plugin.py",    # dev tooling
-    "build_extlibs.ps1",  # dev tooling
+    "build_extlibs_zip.py",  # dev tooling (tagged per-interpreter build)
     ".gitignore",
     ".gitattributes",
     # Docs / dev artifacts, not needed at runtime
@@ -72,6 +72,11 @@ def tracked_files() -> list[str]:
 def _skip(rel: str) -> bool:
     if rel in SKIP_FILES:
         return True
+    # Tagged extlibs bundles (extlibs-cp312-win_amd64.zip, ...) are fetched at
+    # runtime by extlibs_manager, never bundled into the plugin distribution.
+    name = Path(rel).name
+    if name.startswith("extlibs-") and name.endswith(".zip"):
+        return True
     return any(part in SKIP_DIR_PARTS for part in Path(rel).parts)
 
 
@@ -94,7 +99,8 @@ def build_zip() -> None:
 
     size_mb = ZIP_PATH.stat().st_size / 1_048_576
     print(f"Built dist/{PLUGIN_NAME}.zip  ({included} files, {size_mb:.2f} MB)")
-    print("extlibs are downloaded on first run; rebuild extlibs.zip with build_extlibs.ps1.")
+    print("extlibs are downloaded on first run; rebuild the tagged bundles with "
+          "build_extlibs_zip.py (or the 'Build extlibs' GitHub Actions workflow).")
 
 
 if __name__ == "__main__":
