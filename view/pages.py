@@ -15,12 +15,14 @@ from qgis.PyQt.QtGui import QDesktopServices, QIcon, QPixmap
 from qgis.PyQt.QtWebKitWidgets import QWebPage, QWebView
 from qgis.PyQt.QtWidgets import (
     QComboBox,
+    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
+    QScrollArea,
     QSizePolicy,
     QSpinBox,
     QVBoxLayout,
@@ -121,6 +123,7 @@ def _icon(name):
     return QIcon()
 
 
+
 def _button(text, icon=None, tooltip="", style=STYLE_BTN, height=_BTN_HEIGHT):
     """Create a styled button with a consistent icon size, height and cursor."""
     btn = QPushButton(_icon(icon), text) if icon else QPushButton(text)
@@ -132,6 +135,8 @@ def _button(text, icon=None, tooltip="", style=STYLE_BTN, height=_BTN_HEIGHT):
         btn.setToolTip(tooltip)
     if height:
         btn.setMinimumHeight(height)
+    btn.setMinimumWidth(0)
+    btn.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
     return btn
 
 
@@ -144,6 +149,7 @@ def _combo(items, tooltip="", min_width=220):
     cb.setMinimumWidth(min_width)
     cb.setMinimumHeight(28)
     cb.setCursor(Qt.CursorShape.PointingHandCursor)
+    cb.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     return cb
 
 
@@ -152,6 +158,7 @@ def _make_webview():
     view.setFocusPolicy(Qt.NoFocus)
     view.setContextMenuPolicy(Qt.NoContextMenu)
     view.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+    view.setMinimumHeight(200)
     return view
 
 
@@ -236,25 +243,41 @@ def _build_sponsor():
 
 # ----------------------------------------------------------------- coordinates
 def setup_coordinates_page(dialog, page):
-    layout = QVBoxLayout(page)
-    layout.setContentsMargins(14, 10, 14, 10)
-    layout.setSpacing(6)
+    # Outer layout: scroll area fills available height, run button pinned at bottom.
+    outer = QVBoxLayout(page)
+    outer.setContentsMargins(0, 0, 0, 10)
+    outer.setSpacing(0)
+
+    scroll = QScrollArea()
+    scroll.setWidgetResizable(True)
+    scroll.setFrameShape(QFrame.Shape.NoFrame)
+    scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+    scroll.setStyleSheet("QScrollArea { background-color: #f5f7fa; border: none; }")
+
+    inner = QWidget()
+    inner.setStyleSheet("background-color: #f5f7fa;")
+    layout = QVBoxLayout(inner)
+    layout.setContentsMargins(14, 10, 14, 8)
+    layout.setSpacing(8)
 
     # Data source selector (English values are the source keys).
     src_row = QHBoxLayout()
-    src_row.setSpacing(6)
+    src_row.setSpacing(8)
     dialog.source_combo = QComboBox()
     dialog.source_combo.addItem("NASA POWER", "power")
     dialog.source_combo.addItem("Open-Meteo (ERA5)", "openmeteo")
     dialog.source_combo.setToolTip(_tr("Climate data provider"))
+    dialog.source_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     src_row.addWidget(QLabel(_tr("Data source")))
     src_row.addWidget(dialog.source_combo, 1)
     layout.addLayout(src_row)
 
     group = QGroupBox(_tr("Location"))
     grid = QGridLayout(group)
-    grid.setVerticalSpacing(3)
-    grid.setContentsMargins(10, 6, 10, 8)
+    grid.setVerticalSpacing(4)
+    grid.setHorizontalSpacing(8)
+    grid.setContentsMargins(10, 6, 10, 10)
     dialog.LongEdit = QLineEdit()
     dialog.LongEdit.setPlaceholderText("e.g. -47.06")
     dialog.LongEdit.setToolTip(_tr("Longitude in decimal degrees (WGS84)"))
@@ -269,7 +292,8 @@ def setup_coordinates_page(dialog, page):
     dialog.pick_point.setCheckable(True)
     dialog.pick_point.setStyleSheet(STYLE_PICK_TOGGLE)
     dialog.pick_point.setCursor(Qt.CursorShape.PointingHandCursor)
-    dialog.pick_point.setMinimumHeight(32)
+    dialog.pick_point.setMinimumHeight(34)
+    dialog.pick_point.setMinimumWidth(0)
     dialog.pick_point.setToolTip(_tr("Capture a coordinate by clicking on the map canvas"))
     grid.addWidget(dialog.pick_point, 2, 0, 1, 2)
 
@@ -296,8 +320,9 @@ def setup_coordinates_page(dialog, page):
     # Optional comparison point B (overlaid on the Trends chart).
     group_b = QGroupBox(_tr("Comparison point B (optional)"))
     grid_b = QGridLayout(group_b)
-    grid_b.setVerticalSpacing(3)
-    grid_b.setContentsMargins(10, 6, 10, 8)
+    grid_b.setVerticalSpacing(4)
+    grid_b.setHorizontalSpacing(8)
+    grid_b.setContentsMargins(10, 6, 10, 10)
     dialog.LongEditB = QLineEdit()
     dialog.LongEditB.setPlaceholderText("e.g. -44.00")
     dialog.LatEditB = QLineEdit()
@@ -310,17 +335,18 @@ def setup_coordinates_page(dialog, page):
     dialog.pick_point_b.setCheckable(True)
     dialog.pick_point_b.setStyleSheet(STYLE_PICK_TOGGLE)
     dialog.pick_point_b.setCursor(Qt.CursorShape.PointingHandCursor)
-    dialog.pick_point_b.setMinimumHeight(32)
+    dialog.pick_point_b.setMinimumHeight(34)
+    dialog.pick_point_b.setMinimumWidth(0)
     dialog.pick_point_b.setToolTip(_tr("Leave empty for a single-point analysis"))
     grid_b.addWidget(dialog.pick_point_b, 2, 0, 1, 2)
 
     # Replicate point A into B, so the same location can be compared across
     # sources without re-clicking the map.
-    dialog.copy_a_to_b = QPushButton(_tr("⧉  Same location as A"))
-    dialog.copy_a_to_b.setCursor(Qt.CursorShape.PointingHandCursor)
-    dialog.copy_a_to_b.setMinimumHeight(32)
-    dialog.copy_a_to_b.setToolTip(
-        _tr("Copy point A's coordinates here (e.g. to compare data sources)"))
+    dialog.copy_a_to_b = _button(
+        _tr("⧉  Copy coordinates from A"),
+        tooltip=_tr("Copy point A's coordinates here (e.g. to compare data sources)"),
+        height=34,
+    )
     grid_b.addWidget(dialog.copy_a_to_b, 3, 0, 1, 2)
 
     # B may use its own source, so the same point can be compared across sources.
@@ -329,15 +355,17 @@ def setup_coordinates_page(dialog, page):
     dialog.source_combo_b.addItem("NASA POWER", "power")
     dialog.source_combo_b.addItem("Open-Meteo (ERA5)", "openmeteo")
     dialog.source_combo_b.setToolTip(_tr("Data source for the comparison point"))
+    dialog.source_combo_b.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     src_b = QHBoxLayout()
-    src_b.setSpacing(6)
+    src_b.setSpacing(8)
     src_b.addWidget(QLabel(_tr("Source")))
     src_b.addWidget(dialog.source_combo_b, 1)
     grid_b.addLayout(src_b, 4, 0, 1, 2)
     layout.addWidget(group_b)
 
+    # Side-by-side auxiliary buttons.
     aux = QHBoxLayout()
-    aux.setSpacing(6)
+    aux.setSpacing(8)
     dialog.googlemaps = _button(
         _tr("Satellite layer"), "satellite.svg",
         _tr("Add a Google satellite basemap to help locate your point"), height=34)
@@ -349,13 +377,18 @@ def setup_coordinates_page(dialog, page):
     layout.addLayout(aux)
 
     layout.addStretch(1)
+    scroll.setWidget(inner)
+    outer.addWidget(scroll, 1)
 
-    # Run analysis anchored at the bottom of the page (full width).
+    # Run analysis pinned outside the scroll area — always visible at the bottom.
+    run_row = QHBoxLayout()
+    run_row.setContentsMargins(14, 6, 14, 0)
     dialog.gerar_req = _button(
         _tr("Run analysis"), "run.svg",
         _tr("Download NASA POWER data for this point and build the charts"),
-        style=STYLE_BTN_PRIMARY, height=38)
-    layout.addWidget(dialog.gerar_req)
+        style=STYLE_BTN_PRIMARY, height=40)
+    run_row.addWidget(dialog.gerar_req)
+    outer.addLayout(run_row)
 
 
 # -------------------------------------------------------------------- plots
@@ -365,11 +398,13 @@ def _plot_page(dialog, page):
     layout.setContentsMargins(8, 6, 8, 6)
     layout.setSpacing(6)
     row = QHBoxLayout()
+    row.setContentsMargins(0, 0, 0, 0)
     row.setSpacing(6)
     layout.addLayout(row)
     desc = QLabel()
-    desc.setWordWrap(True)
+    desc.setWordWrap(False)
     desc.setStyleSheet("color:#6b7b8b;font-size:11px;font-style:italic;background:transparent;")
+    desc.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     layout.addWidget(desc)
     web = _make_webview()
     layout.addWidget(web, 1)
@@ -379,6 +414,7 @@ def _plot_page(dialog, page):
 def _toolbar_label(text):
     lbl = QLabel(text)
     lbl.setStyleSheet("color: #5b6b7b; font-size: 12px; font-weight: bold; background: transparent;")
+    lbl.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
     return lbl
 
 
@@ -395,6 +431,7 @@ def _nav_footer(dialog, back_key=None, next_key=None):
     lay.addStretch(1)
     if next_key:
         nxt = _button(_tr("Next"), "next.svg", _tr("Go to the next page"))
+        nxt.setLayoutDirection(Qt.LayoutDirection.RightToLeft)  # icon to the right of text
         nxt.clicked.connect(lambda: dialog._goto(next_key))
         lay.addWidget(nxt)
     return bar
@@ -402,7 +439,9 @@ def _nav_footer(dialog, back_key=None, next_key=None):
 
 def setup_trends_page(dialog, page):
     row, web, dialog.var_desc = _plot_page(dialog, page)
-    dialog.atributo = _combo(_VARIABLES, _tr("Choose the climate variable to plot"))
+    dialog.atributo = _combo(_VARIABLES, _tr("Choose the climate variable to plot"),
+                             min_width=160)
+    dialog.atributo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     dialog.save_raw = _button(_tr("Save daily data"), "save.svg",
                               _tr("Export the full daily NASA POWER series as CSV"))
     dialog.navegador = _button(_tr("Open in browser"), "browser.svg",
@@ -413,14 +452,24 @@ def setup_trends_page(dialog, page):
                               _tr("Save the chart as a PNG image"))
     dialog.export_all = _button(_tr("Export all"), "save.svg",
                                 _tr("Export every table to one Excel file"))
+
+    # Row 1: variable selector — label + expanding combo.
     row.addWidget(_toolbar_label(_tr("Variable:")))
-    row.addWidget(dialog.atributo)
-    row.addStretch(1)
-    row.addWidget(dialog.save_raw)
-    row.addWidget(dialog.navegador)
-    row.addWidget(dialog.save_plot)
-    row.addWidget(dialog.save_img)
-    row.addWidget(dialog.export_all)
+    row.addWidget(dialog.atributo, 1)
+
+    # Row 2: action buttons, right-aligned.  Inserted between the variable row
+    # (index 0) and the desc label (index 1) that _plot_page already placed.
+    btn_row = QHBoxLayout()
+    btn_row.setContentsMargins(0, 0, 0, 0)
+    btn_row.setSpacing(6)
+    btn_row.addStretch(1)
+    btn_row.addWidget(dialog.save_raw)
+    btn_row.addWidget(dialog.navegador)
+    btn_row.addWidget(dialog.save_plot)
+    btn_row.addWidget(dialog.save_img)
+    btn_row.addWidget(dialog.export_all)
+    page.layout().insertLayout(1, btn_row)
+
     dialog.webView_1 = web
     page.layout().addWidget(_nav_footer(dialog, back_key="coords", next_key="thermo"))
 
@@ -445,7 +494,7 @@ def setup_thermo_page(dialog, page):
 
 def setup_indices_page(dialog, page):
     row, web, dialog.index_desc = _plot_page(dialog, page)
-    dialog.atributo_2 = _combo(_INDICES, _tr("Choose the ETCCDI climate index to plot"), min_width=300)
+    dialog.atributo_2 = _combo(_INDICES, _tr("Choose the ETCCDI climate index to plot"), min_width=220)
     dialog.atributo_2.setCurrentIndex(0)
     dialog.navegador_3 = _button(_tr("Open in browser"), "browser.svg",
                                  _tr("Open this chart full-screen in your web browser"))

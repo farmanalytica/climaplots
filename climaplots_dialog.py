@@ -46,7 +46,12 @@ from .services import (
     settings_manager,
 )
 from .view import Sidebar, pages, plotly_view
-from .view.styles import STYLE_BTN_HELP, STYLE_BTN_SUBTLE, STYLE_DIALOG
+from .view.styles import (
+    SIDEBAR_COLLAPSED_WIDTH,
+    STYLE_BTN_HELP,
+    STYLE_BTN_SUBTLE,
+    STYLE_DIALOG,
+)
 from .workers import AnalysisWorker
 
 
@@ -63,13 +68,14 @@ _PAGE_TITLES = {
 }
 
 # Per-page window size (w, h). Coordinates stays small so more of the map
-# canvas remains visible while picking a point; plot pages open wide.
+# canvas remains visible while picking a point; plot pages open wider.
+# _goto caps all values to the available area of the screen the dialog is on.
 _PAGE_SIZES = {
-    "intro": (820, 560),
-    "coords": (470, 520),
-    "trends": (1020, 620),
-    "thermo": (1020, 620),
-    "indices": (1020, 620),
+    "intro":   (780, 620),
+    "coords":  (470, 560),
+    "trends":  (980, 660),
+    "thermo":  (980, 660),
+    "indices": (980, 660),
 }
 
 # Plotly chart config (toolbar trimmed) shared by all three views.
@@ -136,6 +142,8 @@ class ClimaPlotsDialog(QDialog):
         """Sidebar + QStackedWidget of pages, built by the view/pages builders."""
         self.setWindowTitle("ClimaPlots")
         self.setStyleSheet(STYLE_DIALOG)
+        self.setSizeGripEnabled(True)
+        self.setMinimumSize(440, 480)
 
         self.sidebar = Sidebar(self)
         self.stack = QStackedWidget(self)
@@ -236,6 +244,7 @@ class ClimaPlotsDialog(QDialog):
         self.sidebar.trends_requested.connect(lambda: self._goto("trends"))
         self.sidebar.thermo_requested.connect(lambda: self._goto("thermo"))
         self.sidebar.indices_requested.connect(lambda: self._goto("indices"))
+        self.sidebar.width_changed.connect(self._on_sidebar_width_changed)
 
         self.navegador.clicked.connect(lambda: self._open_in_browser(1))
         self.navegador_2.clicked.connect(lambda: self._open_in_browser(2))
@@ -282,13 +291,61 @@ class ClimaPlotsDialog(QDialog):
         self._header_title.setText(_tr(_PAGE_TITLES.get(page_key, "")))
         self.proxy.setVisible(page_key == "intro")
         if page_key in _PAGE_SIZES:
-            self.resize(*_PAGE_SIZES[page_key])
+            target_w, target_h = _PAGE_SIZES[page_key]
+            # _PAGE_SIZES encodes content-area widths for a collapsed sidebar.
+            # If the sidebar is currently wider (expanded or mid-animation),
+            # compensate so the content area matches the design intent.
+            target_w += self.sidebar.width() - SIDEBAR_COLLAPSED_WIDTH
+            # Use the screen the dialog is currently on, not necessarily the
+            # primary screen. This matters on multi-monitor setups where the
+            # external monitor is primary but the dialog is on the laptop screen.
+            screen = QApplication.screenAt(self.frameGeometry().center())
+            if screen is None:
+                screen = QApplication.primaryScreen()
+            avail = screen.availableGeometry() if screen is not None else None
+            if avail is not None:
+                # Reserve space for window title bar (~32 px) + frame borders (~8 px)
+                # so the *outer* frame never exceeds availableGeometry.
+                w = min(target_w, avail.width() - 40)
+                h = min(target_h, avail.height() - 50)
+            else:
+                w, h = target_w, target_h
+            if page_key == "coords":
+                # Coordinates page always uses its compact fixed size.
+                self.resize(w, h)
+            else:
+                # Chart/intro pages: grow to the target if currently smaller,
+                # but never shrink a window the user may have already enlarged.
+                self.resize(max(self.width(), w), max(self.height(), h))
+            if avail is not None:
+                # Nudge back on screen if any edge overhangs after resize.
+                x = max(avail.left(), min(self.x(), avail.right() - self.width()))
+                y = max(avail.top(), min(self.y(), avail.bottom() - self.height()))
+                self.move(x, y)
         # Auto-enable map-click capture the first time the user opens the
         # coordinates page, so they can pick a point straight away.
         if (page_key == "coords" and self.click_tool is not None
                 and not self._coords_visited):
             self._coords_visited = True
             self.pick_point.setChecked(True)  # triggers _toggle_pick -> enable
+
+    def _on_sidebar_width_changed(self, old_w, new_w):
+        """Keep the content area width constant while the sidebar animates.
+
+        Each animation step fires this; we grow/shrink the dialog window by
+        the same delta so the QStackedWidget never loses horizontal space.
+        """
+        delta = new_w - old_w
+        if delta == 0:
+            return
+        new_win_w = self.width() + delta
+        screen = QApplication.screenAt(self.frameGeometry().center())
+        if screen is None:
+            screen = QApplication.primaryScreen()
+        avail = screen.availableGeometry() if screen is not None else None
+        if avail is not None:
+            new_win_w = min(new_win_w, avail.width() - 40)
+        self.resize(max(self.minimumWidth(), new_win_w), self.height())
 
     def _on_get_started(self):
         self._goto("coords")
@@ -543,8 +600,39 @@ class ClimaPlotsDialog(QDialog):
         webbrowser.open("https://caioarantes.github.io/climaplots/")
 
     # ------------------------------------------------------------ window events
+    def _fit_and_center(self):
+        """On first show: clamp window to the *actual* screen, then center.
+
+        The initial resize in _goto() uses primaryScreen() because the window
+        has not been placed yet. If the dialog appears on a secondary screen
+        (e.g. a laptop panel while the external monitor is the primary), this
+        method corrects the size before the user sees it.
+        """
+        screen = QApplication.screenAt(self.frameGeometry().center())
+        if screen is None:
+            screen = QApplication.primaryScreen()
+        if screen is None:
+            return
+        avail = screen.availableGeometry()
+        # Proportional initial size: ~75% width, ~80% height, hard caps 1200×850.
+        # avail already excludes the taskbar; subtract frame overhead for height.
+        pct_w = min(int(avail.width() * 0.75), 1200)
+        pct_h = min(int(avail.height() * 0.80), 850)
+        w = min(self.width(), pct_w, avail.width() - 40)
+        h = min(self.height(), pct_h, avail.height() - 50)
+        if w != self.width() or h != self.height():
+            self.resize(w, h)
+        x = avail.left() + (avail.width() - self.width()) // 2
+        y = avail.top() + (avail.height() - self.height()) // 2
+        self.move(max(avail.left(), x), max(avail.top(), y))
+
     def showEvent(self, event):
         super().showEvent(event)
+        # Center once on the first show; subsequent page-switch resizes only
+        # nudge the window back on-screen (handled in _goto) without recentering.
+        if not getattr(self, "_positioned", False):
+            self._positioned = True
+            QTimer.singleShot(50, self._fit_and_center)
         if hasattr(self, "focus_timer"):
             self.focus_timer.start(100)
 
@@ -573,6 +661,7 @@ class ClimaPlotsDialog(QDialog):
             except RuntimeError:
                 pass
         self._remove_markers()
+        self._positioned = False  # re-fit and re-center on next open
         self.hide()
         event.ignore()
 

@@ -80,7 +80,7 @@ def render_html(fig, config):
     config_json = json.dumps(config or {})
     return f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8">
-<style>html,body{{height:100%;width:100%;margin:0;padding:0}}#chart{{width:100%;height:100%}}</style>
+<style>html,body{{height:100%;width:100%;margin:0;padding:0;overflow:hidden}}#chart{{position:fixed;top:0;left:0;width:100%;height:100%}}</style>
 <script>{_plotly_js()}</script>
 </head><body>
 <div id="chart"></div>

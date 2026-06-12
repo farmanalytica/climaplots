@@ -43,31 +43,31 @@ QPushButton:pressed { background-color: #245a8f; }
 QPushButton:disabled { background-color: #bdc8d4; color: #f5f5f5; }
 """
 
-# Soft-blue button look carried over from the original plugin.
 STYLE_BTN = """
 QPushButton {
-    background-color: #d1e7ff; color: black;
-    border-radius: 6px; padding: 6px;
+    background-color: #2c6cab; color: #ffffff; border: none;
+    border-radius: 8px; font-size: 12px; font-weight: bold; padding: 4px 10px;
 }
-QPushButton:hover { background-color: #b6d4fe; }
-QPushButton:disabled { background-color: #f0f0f0; color: #a0a0a0; }
+QPushButton:hover { background-color: #3279bf; }
+QPushButton:pressed { background-color: #245a8f; }
+QPushButton:disabled { background-color: #bdc8d4; color: #f5f5f5; }
 """
 
 # Checkable "Pick point on map" toggle: idle (blue) vs capturing (green, with a
 # clear active border) so the on/off state is obvious at a glance.
 STYLE_PICK_TOGGLE = """
 QPushButton {
-    background-color: #d1e7ff; color: #14324a;
-    border: 1px solid #aacdf5; border-radius: 6px;
+    background-color: #2c6cab; color: #ffffff;
+    border: none; border-radius: 6px;
     padding: 7px; font-weight: bold;
 }
-QPushButton:hover { background-color: #b6d4fe; }
+QPushButton:hover { background-color: #3279bf; }
 QPushButton:checked {
     background-color: #1e9e57; color: #ffffff;
     border: 2px solid #14753f;
 }
 QPushButton:checked:hover { background-color: #21ad5f; }
-QPushButton:disabled { background-color: #f0f0f0; color: #a0a0a0; border-color: #e0e0e0; }
+QPushButton:disabled { background-color: #bdc8d4; color: #f5f5f5; }
 """
 
 # Round "?" help button in the header.

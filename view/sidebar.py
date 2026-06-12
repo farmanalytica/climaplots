@@ -71,6 +71,9 @@ class Sidebar(QFrame):
     trends_requested = pyqtSignal()
     thermo_requested = pyqtSignal()
     indices_requested = pyqtSignal()
+    # Emits (old_width, new_width) on each animation step so the dialog can
+    # grow/shrink the window to keep the content area width constant.
+    width_changed = pyqtSignal(int, int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -181,7 +184,11 @@ class Sidebar(QFrame):
         self._width_animation.start()
 
     def _set_animated_width(self, width):
-        self.setFixedWidth(int(width))
+        old = self.width()
+        new = int(width)
+        self.setFixedWidth(new)
+        if old != new:
+            self.width_changed.emit(old, new)
 
     def _stylesheet(self, expanded):
         align = "left" if expanded else "center"
