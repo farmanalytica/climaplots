@@ -18,7 +18,6 @@ Output:
 """
 from __future__ import annotations
 
-import os
 import subprocess
 import sys
 import zipfile
@@ -33,6 +32,9 @@ ZIP_PATH = DIST_DIR / f"{PLUGIN_NAME}.zip"
 SKIP_FILES = {
     "build_plugin.py",    # dev tooling
     "build_extlibs_zip.py",  # dev tooling (tagged per-interpreter build)
+    "compile_translations.py",  # dev tooling (.ts -> .qm; runtime loads .qm only)
+    "i18n/make_ts.py",          # dev tooling (translations.py -> .ts)
+    "i18n/translations.py",     # translation source strings, dev-only
     ".gitignore",
     ".gitattributes",
     # Docs / dev artifacts, not needed at runtime
@@ -76,6 +78,9 @@ def _skip(rel: str) -> bool:
     # runtime by extlibs_manager, never bundled into the plugin distribution.
     name = Path(rel).name
     if name.startswith("extlibs-") and name.endswith(".zip"):
+        return True
+    # .ts translation sources are dev-only; the runtime loads the compiled .qm.
+    if rel.startswith("i18n/") and rel.endswith(".ts"):
         return True
     return any(part in SKIP_DIR_PARTS for part in Path(rel).parts)
 

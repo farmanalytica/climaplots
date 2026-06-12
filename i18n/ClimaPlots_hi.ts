@@ -238,8 +238,8 @@ See the QGIS log for details.</source>
         <translation>प्रॉक्सी सेटिंग्स</translation>
     </message>
     <message>
-        <source>Enter proxy (e.g. http://user:pass@host:port):</source>
-        <translation>प्रॉक्सी दर्ज करें (उदा.: http://user:pass@host:port):</translation>
+        <source>Enter proxy (e.g. http://[username]:[password]@host:port):</source>
+        <translation>प्रॉक्सी दर्ज करें (उदा.: http://[username]:[password]@host:port):</translation>
     </message>
     <message>
         <source>Image</source>
@@ -308,6 +308,14 @@ See the QGIS log for details.</source>
     <message>
         <source>Source</source>
         <translation>स्रोत</translation>
+    </message>
+    <message>
+        <source>Point A</source>
+        <translation>बिंदु A</translation>
+    </message>
+    <message>
+        <source>Point B</source>
+        <translation>बिंदु B</translation>
     </message>
 </context>
 </TS>

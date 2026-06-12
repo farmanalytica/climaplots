@@ -238,8 +238,8 @@ Consultez le journal QGIS pour plus de détails.</translation>
         <translation>Paramètres du proxy</translation>
     </message>
     <message>
-        <source>Enter proxy (e.g. http://user:pass@host:port):</source>
-        <translation>Saisissez le proxy (ex. : http://utilisateur:motdepasse@hôte:port) :</translation>
+        <source>Enter proxy (e.g. http://[username]:[password]@host:port):</source>
+        <translation>Saisissez le proxy (ex. : http://[utilisateur]:[motdepasse]@hôte:port) :</translation>
     </message>
     <message>
         <source>Image</source>
@@ -308,6 +308,14 @@ Consultez le journal QGIS pour plus de détails.</translation>
     <message>
         <source>Source</source>
         <translation>Source</translation>
+    </message>
+    <message>
+        <source>Point A</source>
+        <translation>Point A</translation>
+    </message>
+    <message>
+        <source>Point B</source>
+        <translation>Point B</translation>
     </message>
 </context>
 </TS>

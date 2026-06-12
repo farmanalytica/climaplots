@@ -43,7 +43,7 @@ SOURCES = [
     "Click a point on the map (or enter Longitude/Latitude) first.",
     "Failed to fetch or process climate data.\nSee the QGIS log for details.",
     "Data not available", "Proxy Settings",
-    "Enter proxy (e.g. http://user:pass@host:port):",
+    "Enter proxy (e.g. http://[username]:[password]@host:port):",
 ]
 
 TRANSLATIONS = {
@@ -96,7 +96,7 @@ TRANSLATIONS = {
         "Failed to fetch or process climate data.\nSee the QGIS log for details.": "Falha ao baixar ou processar os dados climáticos.\nVeja o log do QGIS para detalhes.",
         "Data not available": "Dados não disponíveis",
         "Proxy Settings": "Configurações de Proxy",
-        "Enter proxy (e.g. http://user:pass@host:port):": "Digite o proxy (ex.: http://usuario:senha@host:porta):",
+        "Enter proxy (e.g. http://[username]:[password]@host:port):": "Digite o proxy (ex.: http://[usuario]:[senha]@host:porta):",
     },
     "es": {
         "Intro": "Inicio", "Coordinates": "Coordenadas", "Trends": "Tendencias",
@@ -147,7 +147,7 @@ TRANSLATIONS = {
         "Failed to fetch or process climate data.\nSee the QGIS log for details.": "Error al descargar o procesar los datos climáticos.\nConsulte el registro de QGIS para más detalles.",
         "Data not available": "Datos no disponibles",
         "Proxy Settings": "Configuración de Proxy",
-        "Enter proxy (e.g. http://user:pass@host:port):": "Ingrese el proxy (ej.: http://usuario:clave@host:puerto):",
+        "Enter proxy (e.g. http://[username]:[password]@host:port):": "Ingrese el proxy (ej.: http://[usuario]:[clave]@host:puerto):",
     },
     "fr": {
         "Intro": "Accueil", "Coordinates": "Coordonnées", "Trends": "Tendances",
@@ -198,7 +198,7 @@ TRANSLATIONS = {
         "Failed to fetch or process climate data.\nSee the QGIS log for details.": "Échec du téléchargement ou du traitement des données climatiques.\nConsultez le journal QGIS pour plus de détails.",
         "Data not available": "Données non disponibles",
         "Proxy Settings": "Paramètres du proxy",
-        "Enter proxy (e.g. http://user:pass@host:port):": "Saisissez le proxy (ex. : http://utilisateur:motdepasse@hôte:port) :",
+        "Enter proxy (e.g. http://[username]:[password]@host:port):": "Saisissez le proxy (ex. : http://[utilisateur]:[motdepasse]@hôte:port) :",
     },
     "it": {
         "Intro": "Introduzione", "Coordinates": "Coordinate", "Trends": "Tendenze",
@@ -249,7 +249,7 @@ TRANSLATIONS = {
         "Failed to fetch or process climate data.\nSee the QGIS log for details.": "Impossibile scaricare o elaborare i dati climatici.\nConsulta il log di QGIS per i dettagli.",
         "Data not available": "Dati non disponibili",
         "Proxy Settings": "Impostazioni Proxy",
-        "Enter proxy (e.g. http://user:pass@host:port):": "Inserisci il proxy (es.: http://utente:password@host:porta):",
+        "Enter proxy (e.g. http://[username]:[password]@host:port):": "Inserisci il proxy (es.: http://[utente]:[password]@host:porta):",
     },
     "hi": {
         "Intro": "परिचय", "Coordinates": "निर्देशांक", "Trends": "रुझान",
@@ -300,7 +300,7 @@ TRANSLATIONS = {
         "Failed to fetch or process climate data.\nSee the QGIS log for details.": "जलवायु डेटा प्राप्त या संसाधित करने में विफल।\nविवरण के लिए QGIS लॉग देखें।",
         "Data not available": "डेटा उपलब्ध नहीं",
         "Proxy Settings": "प्रॉक्सी सेटिंग्स",
-        "Enter proxy (e.g. http://user:pass@host:port):": "प्रॉक्सी दर्ज करें (उदा.: http://user:pass@host:port):",
+        "Enter proxy (e.g. http://[username]:[password]@host:port):": "प्रॉक्सी दर्ज करें (उदा.: http://[username]:[password]@host:port):",
     },
     "zh": {
         "Intro": "简介", "Coordinates": "坐标", "Trends": "趋势",
@@ -351,7 +351,7 @@ TRANSLATIONS = {
         "Failed to fetch or process climate data.\nSee the QGIS log for details.": "获取或处理气候数据失败。\n详情请查看 QGIS 日志。",
         "Data not available": "数据不可用",
         "Proxy Settings": "代理设置",
-        "Enter proxy (e.g. http://user:pass@host:port):": "输入代理（例如：http://user:pass@host:port）：",
+        "Enter proxy (e.g. http://[username]:[password]@host:port):": "输入代理（例如：http://[username]:[password]@host:port）：",
     },
 }
 
@@ -484,3 +484,310 @@ for _l, _v in {
 }.items():
     TRANSLATIONS[_l].update({"(same source as A)": _v[0],
                              "Data source for the comparison point": _v[1], "Source": _v[2]})
+
+
+# --- Appended: loading-placeholder coordinate labels --------------------------
+SOURCES += ["Point A", "Point B"]
+for _l, _v in {
+    "pt": ("Ponto A", "Ponto B"),
+    "es": ("Punto A", "Punto B"),
+    "fr": ("Point A", "Point B"),
+    "it": ("Punto A", "Punto B"),
+    "hi": ("बिंदु A", "बिंदु B"),
+    "zh": ("点 A", "点 B"),
+}.items():
+    TRANSLATIONS[_l].update({"Point A": _v[0], "Point B": _v[1]})
+
+
+# --- Intro page HTML body (per language) -------------------------------------
+# Used by view/pages.py to build the intro webview content dynamically so that
+# the intro page respects the user's QGIS locale, not just the widget strings.
+INTRO_BODY = {
+    "en": """
+  <h1>ClimaPlots</h1>
+  <p class="sub">Climate analysis from NASA POWER and Open-Meteo (ERA5), inside QGIS.</p>
+  <p>ClimaPlots fetches decades of daily climate data for any point on the map
+     and turns it into interactive charts &mdash; no coding required. Choose
+     between two data sources: <b>NASA POWER</b> (from 1981) and
+     <b>Open-Meteo (ERA5)</b> (from 1940).</p>
+  <h2>What it produces</h2>
+  <p><b>Annual trends</b> for temperature, precipitation, relative humidity,
+     irradiation, wind speed, reference ET&#8320; and growing degree days, each
+     annotated with <b>Mann&ndash;Kendall</b> trend and <b>Pettitt</b>
+     homogeneity tests.</p>
+  <p><b>Thermo-pluviometric diagram</b> &mdash; the mean monthly precipitation
+     and temperature regime of the location.</p>
+  <p><b>Climate indices</b> &mdash; ETCCDI temperature and precipitation indices
+     plus the Standardized Precipitation Index (SPI).</p>
+  <h2>Compare two locations or two sources</h2>
+  <p>Add an optional <b>comparison point B</b> to overlay a second series on the
+     Trends chart, with trend statistics reported for both points. B can use its
+     own data source, so the <i>same</i> location can be compared across NASA
+     POWER and Open-Meteo &mdash; use <b>Same location as A</b> to copy point A's
+     coordinates without re-clicking the map.</p>
+  <h2>Quick start</h2>
+  <ol>
+    <li>Open the <b>Coordinates</b> page and pick a <b>data source</b>.</li>
+    <li>Click <b>Pick point on map</b> and click a location on the canvas
+        (or type the longitude/latitude manually).</li>
+    <li>Optionally set a <b>comparison point B</b> &mdash; pick it on the map,
+        or press <b>Same location as A</b>.</li>
+    <li>Press <b>Run Analysis</b> and wait while the data is downloaded.</li>
+    <li>Browse the <b>Trends</b>, <b>Thermo-pluviometric</b> and
+        <b>Indices</b> pages. Use <b>Open in the browser</b> for a full-screen
+        chart, or <b>Save data</b> to export a CSV.</li>
+  </ol>
+  <p>Behind a corporate network? Set a proxy via <b>Proxy settings</b> in the
+     top-right corner.</p>
+  <div class="cite">
+    <b>Citation</b> &mdash; publications that use this plugin must cite:<br>
+    <a href="https://doi.org/10.1590/1678-4499.20250223">
+      https://doi.org/10.1590/1678-4499.20250223</a>
+  </div>
+""",
+    "pt": """
+  <h1>ClimaPlots</h1>
+  <p class="sub">Análise climática com NASA POWER e Open-Meteo (ERA5), dentro do QGIS.</p>
+  <p>O ClimaPlots baixa décadas de dados climáticos diários para qualquer ponto do
+     mapa e os transforma em gráficos interativos &mdash; sem necessidade de
+     programação. Escolha entre duas fontes de dados: <b>NASA POWER</b> (a partir
+     de 1981) e <b>Open-Meteo (ERA5)</b> (a partir de 1940).</p>
+  <h2>O que ele produz</h2>
+  <p><b>Tendências anuais</b> de temperatura, precipitação, umidade relativa,
+     irradiação, velocidade do vento, ET&#8320; de referência e graus-dia de
+     crescimento, cada uma anotada com o teste de tendência <b>Mann&ndash;Kendall</b>
+     e o teste de homogeneidade <b>Pettitt</b>.</p>
+  <p><b>Diagrama termopluviométrico</b> &mdash; o regime mensal médio de precipitação
+     e temperatura do local.</p>
+  <p><b>Índices climáticos</b> &mdash; índices de temperatura e precipitação ETCCDI
+     mais o Índice de Precipitação Padronizado (SPI).</p>
+  <h2>Comparar dois locais ou duas fontes</h2>
+  <p>Adicione um <b>ponto de comparação B</b> opcional para sobrepor uma segunda
+     série no gráfico de Tendências, com estatísticas de tendência reportadas para
+     ambos os pontos. B pode usar sua própria fonte de dados, portanto o <i>mesmo</i>
+     local pode ser comparado entre NASA POWER e Open-Meteo &mdash; use
+     <b>Mesma localização de A</b> para copiar as coordenadas do ponto A sem precisar
+     clicar novamente no mapa.</p>
+  <h2>Início rápido</h2>
+  <ol>
+    <li>Abra a página <b>Coordenadas</b> e escolha uma <b>fonte de dados</b>.</li>
+    <li>Clique em <b>Escolha um ponto no mapa</b> e clique em um local no mapa
+        (ou digite longitude/latitude manualmente).</li>
+    <li>Opcionalmente, defina um <b>ponto de comparação B</b> &mdash; escolha-o
+        no mapa ou pressione <b>Mesma localização de A</b>.</li>
+    <li>Pressione <b>Executar análise</b> e aguarde enquanto os dados são baixados.</li>
+    <li>Navegue pelas páginas <b>Tendências</b>, <b>Termopluviométrico</b> e
+        <b>Índices</b>. Use <b>Abrir no navegador</b> para um gráfico em tela cheia,
+        ou <b>Salvar dados</b> para exportar um CSV.</li>
+  </ol>
+  <p>Atrás de um proxy corporativo? Configure-o via <b>Configurações de proxy</b>
+     no canto superior direito.</p>
+  <div class="cite">
+    <b>Citação</b> &mdash; publicações que utilizam este complemento devem citar:<br>
+    <a href="https://doi.org/10.1590/1678-4499.20250223">
+      https://doi.org/10.1590/1678-4499.20250223</a>
+  </div>
+""",
+    "es": """
+  <h1>ClimaPlots</h1>
+  <p class="sub">Análisis climático con NASA POWER y Open-Meteo (ERA5), dentro de QGIS.</p>
+  <p>ClimaPlots descarga décadas de datos climáticos diarios para cualquier punto del
+     mapa y los convierte en gráficos interactivos &mdash; sin necesidad de programación.
+     Elija entre dos fuentes de datos: <b>NASA POWER</b> (desde 1981) y
+     <b>Open-Meteo (ERA5)</b> (desde 1940).</p>
+  <h2>Qué produce</h2>
+  <p><b>Tendencias anuales</b> de temperatura, precipitación, humedad relativa,
+     irradiación, velocidad del viento, ET&#8320; de referencia y grados-día de
+     crecimiento, cada una anotada con el test de tendencia <b>Mann&ndash;Kendall</b>
+     y el test de homogeneidad <b>Pettitt</b>.</p>
+  <p><b>Diagrama termopluviométrico</b> &mdash; el régimen mensual medio de
+     precipitación y temperatura del lugar.</p>
+  <p><b>Índices climáticos</b> &mdash; índices de temperatura y precipitación ETCCDI
+     más el Índice de Precipitación Estandarizado (SPI).</p>
+  <h2>Comparar dos lugares o dos fuentes</h2>
+  <p>Agregue un <b>punto de comparación B</b> opcional para superponer una segunda
+     serie en el gráfico de Tendencias, con estadísticas de tendencia reportadas para
+     ambos puntos. B puede usar su propia fuente de datos, por lo que la <i>misma</i>
+     ubicación puede compararse entre NASA POWER y Open-Meteo &mdash; use
+     <b>Misma ubicación que A</b> para copiar las coordenadas del punto A sin hacer
+     clic de nuevo en el mapa.</p>
+  <h2>Inicio rápido</h2>
+  <ol>
+    <li>Abra la página <b>Coordenadas</b> y seleccione una <b>fuente de datos</b>.</li>
+    <li>Haga clic en <b>Elegir un punto en el mapa</b> y haga clic en un lugar
+        (o escriba la longitud/latitud manualmente).</li>
+    <li>Opcionalmente, defina un <b>punto de comparación B</b> &mdash; elíjalo en
+        el mapa o presione <b>Misma ubicación que A</b>.</li>
+    <li>Presione <b>Ejecutar análisis</b> y espere mientras se descargan los datos.</li>
+    <li>Navegue por las páginas <b>Tendencias</b>, <b>Termopluviométrico</b> e
+        <b>Índices</b>. Use <b>Abrir en el navegador</b> para un gráfico a pantalla
+        completa, o <b>Guardar datos</b> para exportar un CSV.</li>
+  </ol>
+  <p>¿Detrás de una red corporativa? Configure un proxy en
+     <b>Configuración de proxy</b> en la esquina superior derecha.</p>
+  <div class="cite">
+    <b>Cita</b> &mdash; las publicaciones que utilicen este complemento deben citar:<br>
+    <a href="https://doi.org/10.1590/1678-4499.20250223">
+      https://doi.org/10.1590/1678-4499.20250223</a>
+  </div>
+""",
+    "fr": """
+  <h1>ClimaPlots</h1>
+  <p class="sub">Analyse climatique avec NASA POWER et Open-Meteo (ERA5), dans QGIS.</p>
+  <p>ClimaPlots télécharge des décennies de données climatiques quotidiennes pour
+     n'importe quel point de la carte et les transforme en graphiques interactifs
+     &mdash; sans programmation. Choisissez entre deux sources de données :
+     <b>NASA POWER</b> (depuis 1981) et <b>Open-Meteo (ERA5)</b> (depuis 1940).</p>
+  <h2>Ce qu'il produit</h2>
+  <p><b>Tendances annuelles</b> de température, précipitations, humidité relative,
+     irradiation, vitesse du vent, ET&#8320; de référence et degrés-jours de
+     croissance, chacune annotée avec le test de tendance <b>Mann&ndash;Kendall</b>
+     et le test d'homogénéité <b>Pettitt</b>.</p>
+  <p><b>Diagramme thermo-pluviométrique</b> &mdash; le régime mensuel moyen de
+     précipitations et de température du lieu.</p>
+  <p><b>Indices climatiques</b> &mdash; indices de température et de précipitations
+     ETCCDI plus l'Indice de Précipitations Standardisé (SPI).</p>
+  <h2>Comparer deux lieux ou deux sources</h2>
+  <p>Ajoutez un <b>point de comparaison B</b> optionnel pour superposer une deuxième
+     série sur le graphique des Tendances, avec des statistiques de tendance rapportées
+     pour les deux points. B peut utiliser sa propre source de données, de sorte que
+     le <i>même</i> lieu peut être comparé entre NASA POWER et Open-Meteo &mdash;
+     utilisez <b>Même emplacement que A</b> pour copier les coordonnées du point A
+     sans recliquer sur la carte.</p>
+  <h2>Démarrage rapide</h2>
+  <ol>
+    <li>Ouvrez la page <b>Coordonnées</b> et choisissez une <b>source de données</b>.</li>
+    <li>Cliquez sur <b>Choisissez un point sur la carte</b> et cliquez sur un lieu
+        (ou saisissez la longitude/latitude manuellement).</li>
+    <li>Définissez optionnellement un <b>point de comparaison B</b> &mdash;
+        choisissez-le sur la carte ou appuyez sur <b>Même emplacement que A</b>.</li>
+    <li>Appuyez sur <b>Lancer l'analyse</b> et attendez le téléchargement des données.</li>
+    <li>Parcourez les pages <b>Tendances</b>, <b>Thermo-pluviométrique</b> et
+        <b>Indices</b>. Utilisez <b>Ouvrir dans le navigateur</b> pour un graphique
+        plein écran, ou <b>Enregistrer les données</b> pour exporter un CSV.</li>
+  </ol>
+  <p>Derrière un réseau d'entreprise ? Configurez un proxy via
+     <b>Paramètres du proxy</b> dans le coin supérieur droit.</p>
+  <div class="cite">
+    <b>Citation</b> &mdash; les publications utilisant ce module doivent citer :<br>
+    <a href="https://doi.org/10.1590/1678-4499.20250223">
+      https://doi.org/10.1590/1678-4499.20250223</a>
+  </div>
+""",
+    "it": """
+  <h1>ClimaPlots</h1>
+  <p class="sub">Analisi climatica con NASA POWER e Open-Meteo (ERA5), dentro QGIS.</p>
+  <p>ClimaPlots scarica decenni di dati climatici giornalieri per qualsiasi punto della
+     mappa e li trasforma in grafici interattivi &mdash; senza necessità di
+     programmazione. Scegli tra due fonti di dati: <b>NASA POWER</b> (dal 1981) e
+     <b>Open-Meteo (ERA5)</b> (dal 1940).</p>
+  <h2>Cosa produce</h2>
+  <p><b>Tendenze annuali</b> di temperatura, precipitazioni, umidità relativa,
+     irradiazione, velocità del vento, ET&#8320; di riferimento e gradi-giorno di
+     crescita, ciascuna annotata con il test di tendenza <b>Mann&ndash;Kendall</b>
+     e il test di omogeneità <b>Pettitt</b>.</p>
+  <p><b>Diagramma termopluviometrico</b> &mdash; il regime mensile medio di
+     precipitazioni e temperatura del luogo.</p>
+  <p><b>Indici climatici</b> &mdash; indici di temperatura e precipitazioni ETCCDI
+     più l'Indice di Precipitazione Standardizzato (SPI).</p>
+  <h2>Confrontare due luoghi o due fonti</h2>
+  <p>Aggiungi un <b>punto di confronto B</b> opzionale per sovrapporre una seconda
+     serie al grafico delle Tendenze, con statistiche di tendenza riportate per
+     entrambi i punti. B può usare la propria fonte di dati, quindi lo <i>stesso</i>
+     luogo può essere confrontato tra NASA POWER e Open-Meteo &mdash; usa
+     <b>Stessa posizione di A</b> per copiare le coordinate del punto A senza
+     riscattare la mappa.</p>
+  <h2>Avvio rapido</h2>
+  <ol>
+    <li>Apri la pagina <b>Coordinate</b> e scegli una <b>fonte dati</b>.</li>
+    <li>Clicca su <b>Scegli un punto sulla mappa</b> e clicca su un luogo
+        (o digita manualmente la longitudine/latitudine).</li>
+    <li>Facoltativamente, imposta un <b>punto di confronto B</b> &mdash; sceglilo
+        sulla mappa o premi <b>Stessa posizione di A</b>.</li>
+    <li>Premi <b>Esegui analisi</b> e attendi il download dei dati.</li>
+    <li>Sfoglia le pagine <b>Tendenze</b>, <b>Termopluviometrico</b> e <b>Indici</b>.
+        Usa <b>Apri nel browser</b> per un grafico a schermo intero, o
+        <b>Salva dati</b> per esportare un CSV.</li>
+  </ol>
+  <p>Dietro una rete aziendale? Imposta un proxy tramite <b>Impostazioni proxy</b>
+     nell'angolo in alto a destra.</p>
+  <div class="cite">
+    <b>Citazione</b> &mdash; le pubblicazioni che utilizzano questo plugin devono citare:<br>
+    <a href="https://doi.org/10.1590/1678-4499.20250223">
+      https://doi.org/10.1590/1678-4499.20250223</a>
+  </div>
+""",
+    "hi": """
+  <h1>ClimaPlots</h1>
+  <p class="sub">NASA POWER और Open-Meteo (ERA5) से जलवायु विश्लेषण, QGIS के अंदर।</p>
+  <p>ClimaPlots मानचित्र पर किसी भी बिंदु के लिए दशकों के दैनिक जलवायु डेटा को
+     डाउनलोड करता है और उन्हें इंटरेक्टिव चार्ट में बदलता है &mdash; कोई कोडिंग
+     आवश्यक नहीं। दो डेटा स्रोतों में से चुनें: <b>NASA POWER</b> (1981 से) और
+     <b>Open-Meteo (ERA5)</b> (1940 से)।</p>
+  <h2>यह क्या उत्पन्न करता है</h2>
+  <p>तापमान, वर्षा, सापेक्ष आर्द्रता, विकिरण, पवन गति, संदर्भ ET&#8320; और बढ़ने
+     के डिग्री-दिनों की <b>वार्षिक प्रवृत्तियाँ</b>, प्रत्येक
+     <b>Mann&ndash;Kendall</b> प्रवृत्ति और <b>Pettitt</b> समरूपता परीक्षणों के साथ।</p>
+  <p><b>ताप-वर्षामापी आरेख</b> &mdash; स्थान का औसत मासिक वर्षा और तापमान व्यवस्था।</p>
+  <p><b>जलवायु सूचकांक</b> &mdash; ETCCDI तापमान और वर्षा सूचकांक तथा
+     मानकीकृत वर्षा सूचकांक (SPI)।</p>
+  <h2>दो स्थानों या दो स्रोतों की तुलना</h2>
+  <p>Trends चार्ट पर दूसरी श्रृंखला ओवरले करने के लिए एक वैकल्पिक
+     <b>तुलना बिंदु B</b> जोड़ें, दोनों बिंदुओं के लिए प्रवृत्ति आँकड़े रिपोर्ट
+     किए जाते हैं। B अपना डेटा स्रोत उपयोग कर सकता है, इसलिए <i>समान</i> स्थान की
+     NASA POWER और Open-Meteo में तुलना की जा सकती है &mdash; मानचित्र पर पुनः क्लिक
+     किए बिना बिंदु A के निर्देशांक कॉपी करने के लिए <b>A के समान स्थान</b> का
+     उपयोग करें।</p>
+  <h2>त्वरित प्रारंभ</h2>
+  <ol>
+    <li><b>निर्देशांक</b> पृष्ठ खोलें और एक <b>डेटा स्रोत</b> चुनें।</li>
+    <li><b>मानचित्र पर एक बिंदु चुनें</b> पर क्लिक करें और मानचित्र पर एक स्थान
+        क्लिक करें (या देशांतर/अक्षांश मैन्युअल रूप से टाइप करें)।</li>
+    <li>वैकल्पिक रूप से एक <b>तुलना बिंदु B</b> सेट करें &mdash; मानचित्र पर
+        चुनें, या <b>A के समान स्थान</b> दबाएं।</li>
+    <li><b>विश्लेषण चलाएँ</b> दबाएं और डेटा डाउनलोड होने की प्रतीक्षा करें।</li>
+    <li><b>रुझान</b>, <b>ताप-वर्षामापी</b> और <b>सूचकांक</b> पृष्ठ देखें। पूर्ण-स्क्रीन
+        चार्ट के लिए <b>ब्राउज़र में खोलें</b>, या CSV निर्यात के लिए
+        <b>डेटा सहेजें</b> का उपयोग करें।</li>
+  </ol>
+  <p>कॉर्पोरेट नेटवर्क के पीछे? ऊपरी-दाएं कोने में <b>प्रॉक्सी सेटिंग्स</b> के
+     माध्यम से प्रॉक्सी सेट करें।</p>
+  <div class="cite">
+    <b>उद्धरण</b> &mdash; इस प्लगइन का उपयोग करने वाले प्रकाशनों को उद्धृत करना होगा:<br>
+    <a href="https://doi.org/10.1590/1678-4499.20250223">
+      https://doi.org/10.1590/1678-4499.20250223</a>
+  </div>
+""",
+    "zh": """
+  <h1>ClimaPlots</h1>
+  <p class="sub">基于 NASA POWER 和 Open-Meteo (ERA5) 的气候分析，集成于 QGIS。</p>
+  <p>ClimaPlots 可为地图上任意一点下载数十年的每日气候数据，并将其转化为交互式图表
+     &mdash; 无需编程。可在两种数据源之间选择：<b>NASA POWER</b>（自 1981 年起）和
+     <b>Open-Meteo (ERA5)</b>（自 1940 年起）。</p>
+  <h2>功能概览</h2>
+  <p>气温、降水量、相对湿度、辐射、风速、参考 ET&#8320; 和生长积温的<b>年度趋势</b>，
+     每项均标注 <b>Mann&ndash;Kendall</b> 趋势检验和 <b>Pettitt</b> 均一性检验结果。</p>
+  <p><b>温雨图</b> &mdash; 该地点的月平均降水量和温度变化规律。</p>
+  <p><b>气候指数</b> &mdash; ETCCDI 温度和降水指数，以及标准化降水指数 (SPI)。</p>
+  <h2>对比两个地点或两个数据源</h2>
+  <p>添加可选的<b>对比点 B</b>，在趋势图中叠加第二条数据系列，并同时报告两点的趋势
+     统计。B 可使用独立的数据源，因此<i>同一</i>地点可在 NASA POWER 和 Open-Meteo
+     之间进行对比 &mdash; 使用<b>与 A 相同的位置</b>可直接复制点 A 的坐标，无需重新
+     点击地图。</p>
+  <h2>快速入门</h2>
+  <ol>
+    <li>打开<b>坐标</b>页面，选择<b>数据源</b>。</li>
+    <li>点击<b>在地图上选择一个点</b>，然后在地图上点击某个位置（或手动输入经度/纬度）。</li>
+    <li>可选：设置<b>对比点 B</b> &mdash; 在地图上选取，或按<b>与 A 相同的位置</b>。</li>
+    <li>点击<b>运行分析</b>，等待数据下载完成。</li>
+    <li>浏览<b>趋势</b>、<b>温雨图</b>和<b>指数</b>页面。使用<b>在浏览器中打开</b>
+        查看全屏图表，或使用<b>保存数据</b>导出 CSV。</li>
+  </ol>
+  <p>位于企业网络内？通过右上角的<b>代理设置</b>配置代理。</p>
+  <div class="cite">
+    <b>引用</b> &mdash; 使用本插件的出版物必须引用：<br>
+    <a href="https://doi.org/10.1590/1678-4499.20250223">
+      https://doi.org/10.1590/1678-4499.20250223</a>
+  </div>
+""",
+}

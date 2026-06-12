@@ -238,8 +238,8 @@ See the QGIS log for details.</source>
         <translation>代理设置</translation>
     </message>
     <message>
-        <source>Enter proxy (e.g. http://user:pass@host:port):</source>
-        <translation>输入代理（例如：http://user:pass@host:port）：</translation>
+        <source>Enter proxy (e.g. http://[username]:[password]@host:port):</source>
+        <translation>输入代理（例如：http://[username]:[password]@host:port）：</translation>
     </message>
     <message>
         <source>Image</source>
@@ -308,6 +308,14 @@ See the QGIS log for details.</source>
     <message>
         <source>Source</source>
         <translation>来源</translation>
+    </message>
+    <message>
+        <source>Point A</source>
+        <translation>点 A</translation>
+    </message>
+    <message>
+        <source>Point B</source>
+        <translation>点 B</translation>
     </message>
 </context>
 </TS>

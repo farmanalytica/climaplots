@@ -11,6 +11,7 @@ import datetime
 import os
 
 from qgis.PyQt.QtCore import QCoreApplication, Qt, QUrl, QSize
+from qgis.core import QgsApplication
 from qgis.PyQt.QtGui import QDesktopServices, QIcon, QPixmap
 from qgis.PyQt.QtWebKitWidgets import QWebPage, QWebView
 from qgis.PyQt.QtWidgets import (
@@ -33,6 +34,26 @@ _MIN_YEAR = 1981
 _MAX_YEAR = datetime.date.today().year - 1
 
 from .styles import STYLE_BTN, STYLE_BTN_PRIMARY, STYLE_PICK_TOGGLE
+from ..i18n.translations import INTRO_BODY
+
+_INTRO_CSS = (
+    "html,body{margin:0;padding:0;background:#f5f7fa}"
+    'body{font-family:"Segoe UI",Arial,sans-serif;color:#41505f;'
+    "font-size:12px;line-height:1.5;padding:10px 18px}"
+    "h1{color:#1c3d5a;font-size:19px;margin:0 0 2px}"
+    ".sub{color:#2c6cab;font-size:12px;margin:0 0 8px}"
+    "h2{color:#1c3d5a;font-size:13px;margin:10px 0 4px;"
+    "border-bottom:1px solid #e3e9ef;padding-bottom:2px}"
+    "p{margin:3px 0}"
+    "ol{margin:4px 0 4px 2px;padding-left:18px}"
+    "li{margin:2px 0}"
+    "b{color:#1c3d5a}"
+    ".cite{margin-top:10px;padding:8px 12px;background:#eaf2fb;"
+    "border:1px solid #cfe0f3;border-radius:8px;font-size:11px}"
+    ".cite a{color:#2c6cab;font-weight:bold;text-decoration:none}"
+    "code{background:#eef2f6;border-radius:4px;padding:1px 5px;"
+    "font-size:11px;color:#1c3d5a}"
+)
 
 
 def _tr(text):
@@ -171,11 +192,18 @@ def setup_intro_page(dialog, page):
     outer.setContentsMargins(0, 0, 0, 0)
     outer.setSpacing(0)
 
-    # Explainer / usage guide / citation rendered from assets/intro.html.
+    # Explainer / usage guide / citation rendered from translated HTML.
     view = _make_webview()
     view.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
     view.linkClicked.connect(QDesktopServices.openUrl)  # open DOI etc. externally
-    view.load(QUrl.fromLocalFile(os.path.join(_ASSETS, "intro.html")))
+    lang = QgsApplication.instance().locale()[:2]
+    body = INTRO_BODY.get(lang, INTRO_BODY["en"])
+    view.setHtml(
+        "<!DOCTYPE html><html lang=\"{l}\"><head><meta charset=\"utf-8\">"
+        "<style>{css}</style></head><body>{body}</body></html>".format(
+            l=lang, css=_INTRO_CSS, body=body
+        )
+    )
     outer.addWidget(view, 1)
 
     btn_row = QHBoxLayout()

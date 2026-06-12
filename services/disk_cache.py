@@ -16,7 +16,7 @@ CACHE_DIR = os.path.join(tempfile.gettempdir(), "climaplots_cache")
 
 def cache_path(*parts):
     key = "|".join(str(p) for p in parts)
-    digest = hashlib.md5(key.encode("utf-8")).hexdigest()  # noqa: S324 - cache key only
+    digest = hashlib.md5(key.encode("utf-8"), usedforsecurity=False).hexdigest()  # noqa: S324 - cache key only
     return os.path.join(CACHE_DIR, digest + ".pkl")
 
 
@@ -25,7 +25,8 @@ def load(path):
     if not os.path.isfile(path):
         return None
     try:
-        return pd.read_pickle(path)
+        # Cache files are written locally by this plugin only (never untrusted data).
+        return pd.read_pickle(path)  # nosec B301
     except Exception:
         return None
 

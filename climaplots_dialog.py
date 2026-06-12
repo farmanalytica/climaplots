@@ -93,10 +93,23 @@ _PLOT_CONFIG = {
     ],
 }
 
-def _loading_html():
+def _loading_html(location=""):
+    loc_line = (
+        "<div style='margin-top:10px;font-size:13px;color:#8a98a6'>"
+        + location + "</div>"
+    ) if location else ""
     return (
-        "<html><body style='font-family:sans-serif;color:#555;text-align:center;"
-        "margin-top:40px'><h3>" + _tr("Fetching climate data...") + "</h3></body></html>"
+        "<!DOCTYPE html><html><head><meta charset='utf-8'><style>"
+        "html,body{height:100%;margin:0;font-family:sans-serif;background:#fff}"
+        ".box{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"
+        "text-align:center;color:#555}"
+        ".spinner{width:34px;height:34px;margin:0 auto 12px;"
+        "border:3px solid #e3e9ef;border-top-color:#1c3d5a;border-radius:50%;"
+        "animation:spin 0.9s linear infinite}"
+        "@keyframes spin{to{transform:rotate(360deg)}}"
+        "</style></head><body><div class='box'><div class='spinner'></div>"
+        "<div style='font-size:15px'>" + _tr("Fetching climate data...") + "</div>"
+        + loc_line + "</div></body></html>"
     )
 
 
@@ -462,11 +475,19 @@ class ClimaPlotsDialog(QDialog):
 
         self._reset_results()
         QApplication.setOverrideCursor(Qt.WaitCursor)
+        location = "{}: {}, {}".format(
+            _tr("Point A"), self.LatEdit.text().strip(), self.LongEdit.text().strip())
+        if self.LatEditB.text().strip() and self.LongEditB.text().strip():
+            location += "&nbsp;&nbsp;|&nbsp;&nbsp;{}: {}, {}".format(
+                _tr("Point B"), self.LatEditB.text().strip(), self.LongEditB.text().strip())
         for view in (self.webView_1, self.webView_2, self.webView_3):
             try:
-                view.setHtml(_loading_html())
+                view.setHtml(_loading_html(location))
             except Exception:
                 pass
+        # Jump to the first plot page right away so the user sees the loading
+        # state (and the coordinates being fetched) instead of a frozen form.
+        self._goto("trends")
 
         self._worker = AnalysisWorker(
             self.LongEdit.text(), self.LatEdit.text(), settings_manager.get_proxy(),
@@ -498,6 +519,12 @@ class ClimaPlotsDialog(QDialog):
     def _on_analysis_failed(self, message):
         QApplication.restoreOverrideCursor()
         QgsMessageLog.logMessage(message, "ClimaPlots", Qgis.Critical)
+        # Clear the loading spinners so the plot pages don't spin forever.
+        for view in (self.webView_1, self.webView_2, self.webView_3):
+            try:
+                view.setHtml("")
+            except Exception:
+                pass
         QMessageBox.warning(self, "ClimaPlots",
                             "Failed to fetch or process climate data.\nSee the QGIS log for details.")
         for tab in (1, 2, 3):
@@ -581,7 +608,7 @@ class ClimaPlotsDialog(QDialog):
         dialog = QDialog(self)
         dialog.setWindowTitle(_tr("Proxy Settings"))
         layout = QVBoxLayout(dialog)
-        layout.addWidget(QLabel(_tr("Enter proxy (e.g. http://user:pass@host:port):")))
+        layout.addWidget(QLabel(_tr("Enter proxy (e.g. http://[username]:[password]@host:port):")))
         proxy_edit = QLineEdit()
         proxy_edit.setText(settings_manager.get_proxy())
         layout.addWidget(proxy_edit)
